@@ -41,3 +41,9 @@ out/
 *.properties
 src/main/resources/application.properties
 src/main/resources/application.yml
+
+## Mac
+.DS_Store
+
+## 리소스
+**/google.json
