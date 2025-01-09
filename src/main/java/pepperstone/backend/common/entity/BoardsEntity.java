@@ -5,6 +5,8 @@ import lombok.*;
 import pepperstone.backend.common.entity.enums.TargetType;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "boards")
@@ -47,4 +49,8 @@ public class BoardsEntity {
     @ManyToOne(targetEntity = JobGroupEntity.class)
     @JoinColumn(name = "jobGroup_id")
     private JobGroupEntity jobGroup;
+
+    // boards : boardTracking = 1 : N
+    @OneToMany(mappedBy = "boards")
+    private List<BoardTrackingEntity> boardTracking = new ArrayList<>();
 }
