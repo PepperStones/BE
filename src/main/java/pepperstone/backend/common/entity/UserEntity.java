@@ -23,6 +23,9 @@ public class UserEntity {
     private Long id;
 
     @Column(nullable = false)
+    private String userId; // 아이디
+
+    @Column(nullable = false)
     private String companyNum; // 사번
 
     @Column(nullable = false)
