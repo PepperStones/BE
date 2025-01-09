@@ -7,6 +7,11 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.AuthorityUtils;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -38,10 +43,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     handleErrorResponse(response, "false(토큰 재발급을 받으세요)", "Token expired. Request URL: " + request.getContextPath());
                     return;
                 } else {
-
+                    authenticateUser(claims, request);
                 }
+            } else {
+                log.warn("Token is null");
             }
+        } catch (Exception e) {
+            log.error("Could not set user authentication in security context", e);
         }
+
+        // 다음 필터로 계속 진행
+        filterChain.doFilter(request, response);
     }
 
     private String parseBearerToken(HttpServletRequest request) {
@@ -67,6 +79,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         UserEntity user = new UserEntity();
         user.setId(Long.valueOf(claims.getSubject())); // 아이디 할당
 
+        // 인증 완료 -> SecurityContextHolder에 등록되어야 인증된 사용자
+        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(user, null, AuthorityUtils.NO_AUTHORITIES); // 사용자 정보
+        authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request)); // 사용자 인증 세부 정보 설정
 
+        SecurityContext securityContext = SecurityContextHolder.createEmptyContext(); // 빈 SecurityContext 설정
+        securityContext.setAuthentication(authentication); // context에 인증 정보 설정
+        SecurityContextHolder.setContext(securityContext); // SecurityContextHolder 저장
     }
 }
