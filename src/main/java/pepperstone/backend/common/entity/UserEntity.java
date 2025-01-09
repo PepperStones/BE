@@ -23,6 +23,9 @@ public class UserEntity {
     private Long id;
 
     @Column(nullable = false)
+    private String userId; // 아이디
+
+    @Column(nullable = false)
     private String companyNum; // 사번
 
     @Column(nullable = false)
@@ -41,6 +44,9 @@ public class UserEntity {
     @Column(nullable = false)
     private Integer accumulatedExperience; // 올해 제외 누적 경험치
 
+    @Column(nullable = false)
+    private String level; // 레벨
+
     @Enumerated(EnumType.STRING)
     private Skin skin = Skin.S0; // Default 값: S0
 
@@ -50,8 +56,9 @@ public class UserEntity {
     @Enumerated(EnumType.STRING)
     private Effect effect = Effect.E0; // Default 값: E0
 
-    // users : jobGroup = 1 : 1
-    @OneToOne(mappedBy = "users")
+    // jobGroup : users = 1 : N
+    @ManyToOne(targetEntity = JobGroupEntity.class)
+    @JoinColumn(name = "jobGroup_id")
     private JobGroupEntity jobGroup;
 
     // users : performanceEvaluations = 1 : N
@@ -85,4 +92,12 @@ public class UserEntity {
     // users : fcm = 1 : N
     @OneToMany(mappedBy = "users")
     private List<FcmEntity> fcm = new ArrayList<>();
+
+    // users : challengeProgress = 1 : N
+    @OneToMany(mappedBy = "users")
+    private List<ChallengeProgressEntity> challengeProgress = new ArrayList<>();
+
+    // users : boardTracking = 1 : N
+    @OneToMany(mappedBy = "users")
+    private List<BoardTrackingEntity> boardTracking = new ArrayList<>();
 }

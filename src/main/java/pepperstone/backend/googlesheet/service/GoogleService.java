@@ -4,6 +4,8 @@ import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.sheets.v4.Sheets;
+import com.google.api.services.sheets.v4.model.Sheet;
+import com.google.api.services.sheets.v4.model.Spreadsheet;
 import com.google.api.services.sheets.v4.model.UpdateValuesResponse;
 import com.google.api.services.sheets.v4.model.ValueRange;
 import com.google.auth.http.HttpCredentialsAdapter;
@@ -15,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -91,4 +94,24 @@ public class GoogleService {
             throw new RuntimeException("Failed to read data from the spreadsheet: " + e.getMessage(), e);
         }
     }
+
+    public List<String> getSheetNames(String spreadsheetId) {
+        try {
+            Sheets service = getSheetsService();
+            Spreadsheet spreadsheet = service.spreadsheets().get(spreadsheetId).execute();
+            List<Sheet> sheets = spreadsheet.getSheets();
+
+            List<String> sheetNames = new ArrayList<>();
+            for (Sheet sheet : sheets) {
+                sheetNames.add(sheet.getProperties().getTitle()); // 시트 이름 추가
+            }
+
+            logger.info("Sheet names retrieved successfully: {}", sheetNames);
+            return sheetNames;
+        } catch (Exception e) {
+            logger.error("Failed to retrieve sheet names", e);
+            throw new RuntimeException("Failed to retrieve sheet names: " + e.getMessage(), e);
+        }
+    }
+
 }
