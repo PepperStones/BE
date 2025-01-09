@@ -62,4 +62,16 @@ public class GoogleController {
                     .body(Collections.singletonList(List.of("Failed to read data: " + e.getMessage())));
         }
     }
+
+    @GetMapping("/sheet-names")
+    public ResponseEntity<List<String>> getSheetNames() {
+        try {
+            List<String> sheetNames = googleService.getSheetNames(SPREADSHEET_ID);
+            return ResponseEntity.ok(sheetNames);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().body(Collections.emptyList());
+        }
+    }
+
 }
