@@ -18,15 +18,17 @@ public class JobGroupEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false)
+    private String jobName; // 직무 그룹명
+
     // centerGroup : jobGroup = 1 : N
     @ManyToOne(targetEntity = CenterGroupEntity.class)
     @JoinColumn(name = "centerGroup_id")
     private CenterGroupEntity centerGroup;
 
-    // users : jobGroup = 1 : 1
-    @OneToOne
-    @JoinColumn(name = "user_id")
-    private UserEntity users;
+    // jobGroup : users = 1 : N
+    @OneToMany(mappedBy = "jobGroup")
+    private List<UserEntity> users = new ArrayList<>();
 
     // jobGroup : boards = 1 : N
     @OneToMany(mappedBy = "jobGroup")

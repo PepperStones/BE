@@ -29,7 +29,7 @@ public class PerformanceEvaluationEntity {
     private Grade grade; // 인사평가 등급
 
     @Column(nullable = false)
-    private int experiencePoints; // 부여된 경험치
+    private int experience; // 획득 경험치
 
     @Column(nullable = false)
     private LocalDate createdAt; // 부여 날짜
