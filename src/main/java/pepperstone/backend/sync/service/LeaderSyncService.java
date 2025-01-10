@@ -37,20 +37,45 @@ public class LeaderSyncService {
         List<Map<String, Object>> peopleList = new ArrayList<>();
         peopleList = peopleList(data);
 
-        System.out.println("사원 정보:");
-        for (Map<String, Object> quest : peopleList) {
-            System.out.println(quest);
-        }
-
         // 퀘스트 정보를 저장할 리스트
         List<Map<String, Object>> questList = new ArrayList<>();
         questList = questList(data);
 
-        System.out.println("퀘스트 정보:");
-        for (Map<String, Object> quest : questList) {
-            System.out.println(quest);
-        }
+        // 퀘스트 달성 정보 저장 리스트
+        List<Map<String, Object>> questProgressList = new ArrayList<>();
+        questProgressList = questProgressList(data);
 
+
+
+/*        // 퀘스트 달성 정보 저장
+        for (Map<String, Object> person : peopleList) {
+            String personCompanyNum = person.get("companyNum").toString();
+
+            // 해당 사원의 퀘스트 달성 정보 필터링
+            List<Map<String, Object>> personAchievements = questProgressList.stream()
+                    .filter(quest -> quest.get("companyNum").equals(personCompanyNum))
+                    .toList();
+
+            if (personAchievements.isEmpty()) continue;
+
+            // 출력: 해당 사원에 대한 퀘스트 달성 정보
+            System.out.println("사원 정보:");
+            System.out.println("사번: " + personCompanyNum + ", 이름: " + person.get("name"));
+
+            for (Map<String, Object> achievement : personAchievements) {
+                String monthOrWeek = achievement.get("monthOrWeek").toString();
+                String questName = achievement.get("questName").toString();
+                String achievementType = achievement.get("achievementType").toString();
+                int experience = (int) achievement.get("experience");
+
+                // 출력: 퀘스트 달성 정보
+                System.out.println("  월/주: " + monthOrWeek);
+                System.out.println("  퀘스트명: " + questName);
+                System.out.println("  달성 유형: " + achievementType);
+                System.out.println("  부여 경험치: " + experience);
+                System.out.println("---------------------------");
+            }
+        }*/
 
     }
 
@@ -130,5 +155,40 @@ public class LeaderSyncService {
         }
 
         return questList;
+    }
+
+    // 퀘스트 달성 정보 저장 리스트 반환 메서드
+    private List<Map<String, Object>> questProgressList(List<List<Object>> data){
+        // 퀘스트 달성 정보 저장 리스트
+        List<Map<String, Object>> questProgressList = new ArrayList<>();
+
+        // 10번째 행부터 시작
+        int startRow = 9;
+        while (startRow < data.size() && data.get(startRow).size() > 5) {
+            List<Object> questRow = data.get(startRow);
+
+            // 필요한 정보 추출
+            int monthOrWeek = parseInteger(questRow, 1); // 월 또는 주 정보
+            String companyNum = questRow.get(2).toString().trim(); // 사번
+            String name = questRow.get(3).toString().trim(); // 이름
+            String questName = questRow.get(4).toString().trim(); // 퀘스트명
+            String achievementType = questRow.get(5).toString().trim(); // 달성내용 (Max, Median 등)
+            int experience = parseInteger(questRow, 6); // 부여 경험치
+
+            // 정보 저장
+            Map<String, Object> questInfo = new HashMap<>();
+            questInfo.put("companyNum", companyNum);
+            questInfo.put("name", name);
+            questInfo.put("questName", questName);
+            questInfo.put("achievementType", achievementType);
+            questInfo.put("experience", experience);
+            questInfo.put("monthOrWeek", monthOrWeek);
+
+            // 리스트에 추가
+            questProgressList.add(questInfo);
+
+            startRow++;
+        }
+        return questProgressList;
     }
 }
