@@ -23,7 +23,6 @@ import java.util.Map;
 @RequestMapping("/auth")
 public class UserController {
     private final UserService userService;
-
     private final TokenProvider tokenProvider;
 
     @PostMapping("/signin")

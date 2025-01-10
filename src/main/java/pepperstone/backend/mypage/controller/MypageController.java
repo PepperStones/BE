@@ -1,6 +1,5 @@
 package pepperstone.backend.mypage.controller;
 
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -9,12 +8,14 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import pepperstone.backend.common.entity.PerformanceEvaluationEntity;
 import pepperstone.backend.common.entity.UserEntity;
+import pepperstone.backend.common.entity.enums.ItemType;
 import pepperstone.backend.mypage.dto.response.MyInfoResponseDTO;
+import pepperstone.backend.mypage.dto.response.StarResponseDTO;
 import pepperstone.backend.mypage.dto.resquest.UpdatePWRequestDTO;
+import pepperstone.backend.mypage.dto.resquest.UpdateStarRequestDTO;
 import pepperstone.backend.mypage.service.MypageService;
 
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor
@@ -52,8 +53,8 @@ public class MypageController {
         }
     }
 
-    @PatchMapping("/udpate")
-    public ResponseEntity<Map<String, Object>> udpatePW(@AuthenticationPrincipal UserEntity userInfo,
+    @PatchMapping("/update")
+    public ResponseEntity<Map<String, Object>> updatePW(@AuthenticationPrincipal UserEntity userInfo,
                                                         @RequestBody UpdatePWRequestDTO dto,
                                                         BindingResult bindingResult) {
         try {
@@ -77,13 +78,54 @@ public class MypageController {
             if (!mypageService.validPW(dto.getNewPassword()))
                 throw new IllegalArgumentException("비밀번호는 8~30자의 영문 대소문자, 숫자, 특수문자를 모두 포함해야 합니다.");
 
-            mypageService.updatePW(user.getId(), dto.getNewPassword());
+            user.setPassword(dto.getNewPassword());
+
+            mypageService.updateUser(user);
 
             return ResponseEntity.ok().body(Map.of("code", 200, "data", true));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("code", 400, "data", e.getMessage()));
         } catch (RuntimeException e) {
             return ResponseEntity.status(500).body(Map.of("code", 500, "data", "나의 정보 불러오기 오류. 잠시 후 다시 시도해주세요."));
+        }
+    }
+
+    @PatchMapping("/star")
+    public ResponseEntity<Map<String, Object>> updateStar(@AuthenticationPrincipal UserEntity userInfo, @RequestBody UpdateStarRequestDTO dto) {
+        try {
+            final UserEntity user = mypageService.getUserInfo(userInfo.getId());
+
+            if (user == null)
+                throw new IllegalArgumentException("나의 정보가 없습니다.");
+
+            if (dto.getSkin() != null) {
+                mypageService.validateUnlocked(userInfo.getId(), ItemType.SKIN, dto.getSkin().name());
+                user.setSkin(dto.getSkin());
+            }
+
+            if (dto.getDecoration() != null) {
+                mypageService.validateUnlocked(userInfo.getId(), ItemType.DECORATION, dto.getDecoration().name());
+                user.setDecoration(dto.getDecoration());
+            }
+
+            if (dto.getEffect() != null) {
+                mypageService.validateUnlocked(userInfo.getId(), ItemType.EFFECT, dto.getEffect().name());
+                user.setEffect(dto.getEffect());
+            }
+
+            final UserEntity starInfo = mypageService.updateUser(user);
+
+            final StarResponseDTO resDTO = StarResponseDTO.builder()
+                    .skin(starInfo.getSkin())
+                    .decoration(starInfo.getDecoration())
+                    .effect(starInfo.getEffect())
+                    .build();
+
+            return ResponseEntity.ok().body(Map.of("code", 200, "data", resDTO));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("code", 400, "data", e.getMessage()));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(500).body(Map.of("code", 500, "data", "로그인 오류. 잠시 후 다시 시도해주세요."));
         }
     }
 }

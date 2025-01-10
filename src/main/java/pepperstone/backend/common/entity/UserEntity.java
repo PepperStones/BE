@@ -98,4 +98,8 @@ public class UserEntity {
     // users : boardTracking = 1 : N
     @OneToMany(mappedBy = "users")
     private List<BoardTrackingEntity> boardTracking = new ArrayList<>();
+
+    // users : unlockStatus = 1 : N
+    @OneToMany(mappedBy = "users")
+    private List<UnlockStatusEntity> unlockStatus = new ArrayList<>();
 }
