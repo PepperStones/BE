@@ -2,11 +2,10 @@ package pepperstone.backend.user.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.BindingResult;
 import pepperstone.backend.common.entity.UserEntity;
-import pepperstone.backend.user.repository.UserRespository;
+import pepperstone.backend.common.repository.UserRespository;
 
 import java.util.Objects;
 
