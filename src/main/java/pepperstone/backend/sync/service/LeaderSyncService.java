@@ -32,6 +32,67 @@ public class LeaderSyncService {
         String department = data.get(18).get(12).toString().trim(); // 소속 센터
         String jobGroup = data.get(18).get(13).toString().trim(); // 소속 그룹
 
+        // 소속 인원 정보
+        // 퀘스트 정보를 저장할 리스트
+        List<Map<String, Object>> peopleList = new ArrayList<>();
+        peopleList = peopleList(data);
+
+        System.out.println("사원 정보:");
+        for (Map<String, Object> quest : peopleList) {
+            System.out.println(quest);
+        }
+
+        // 퀘스트 정보를 저장할 리스트
+        List<Map<String, Object>> questList = new ArrayList<>();
+        questList = questList(data);
+
+        System.out.println("퀘스트 정보:");
+        for (Map<String, Object> quest : questList) {
+            System.out.println(quest);
+        }
+
+
+    }
+
+    private int parseInteger(List<Object> row, int index) {
+        try {
+            return row.size() > index && !row.get(index).toString().isEmpty() ? Integer.parseInt(row.get(index).toString().trim()) : 0;
+        } catch (NumberFormatException e) {
+            return 0;
+        }
+    }
+
+    // 사원 정보를 저장한 리스트 반환 메서드
+    private List<Map<String, Object>> peopleList(List<List<Object>> data){
+        // 퀘스트 정보를 저장할 리스트
+        List<Map<String, Object>> peopleList = new ArrayList<>();
+
+        // 19번째 행에서 정보 읽기
+        int startRow = 18;
+        // 사번이 빈칸이면 종료
+        while(startRow < data.size() && data.get(startRow).size() > 9 && !data.get(startRow).get(9).toString().isEmpty()) {
+            List<Object> personRow = data.get(startRow);
+
+            // 사원 정보
+            String companyNum = personRow.get(9).toString().trim(); // 사번
+            String name = personRow.get(10).toString().trim(); // 이름
+
+            // 사원 정보를 맵으로 저장
+            Map<String, Object> peopleInfo = new HashMap<>();
+            peopleInfo.put("companyNum", companyNum);
+            peopleInfo.put("name", name);
+
+            // 리스트에 사원 정보 추가
+            peopleList.add(peopleInfo);
+
+            startRow++;
+        }
+
+        return peopleList;
+    }
+
+    // 퀘스트 정보를 저장한 리스트 반환 메서드
+    private List<Map<String, Object>> questList(List<List<Object>> data){
         // 퀘스트 정보를 저장할 리스트
         List<Map<String, Object>> questList = new ArrayList<>();
 
@@ -68,22 +129,6 @@ public class LeaderSyncService {
             startRow++;
         }
 
-
-    }
-
-    private int parseInteger(List<Object> row, int index) {
-        try {
-            return row.size() > index && !row.get(index).toString().isEmpty() ? Integer.parseInt(row.get(index).toString().trim()) : 0;
-        } catch (NumberFormatException e) {
-            return 0;
-        }
-    }
-
-    private double parseDouble(List<Object> row, int index) {
-        try {
-            return row.size() > index && !row.get(index).toString().isEmpty() ? Double.parseDouble(row.get(index).toString().trim()) : 0.0;
-        } catch (NumberFormatException e) {
-            return 0.0;
-        }
+        return questList;
     }
 }
