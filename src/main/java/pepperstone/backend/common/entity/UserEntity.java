@@ -2,10 +2,7 @@ package pepperstone.backend.common.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import pepperstone.backend.common.entity.enums.Skin;
-import pepperstone.backend.common.entity.enums.Decoration;
-import pepperstone.backend.common.entity.enums.Effect;
-import pepperstone.backend.common.entity.enums.UserRole;
+import pepperstone.backend.common.entity.enums.*;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -45,6 +42,7 @@ public class UserEntity {
     private Integer accumulatedExperience; // 올해 제외 누적 경험치
 
     @Column(nullable = false)
+//    private Level level; // 레벨
     private String level; // 레벨
 
     @Enumerated(EnumType.STRING)
@@ -100,4 +98,8 @@ public class UserEntity {
     // users : boardTracking = 1 : N
     @OneToMany(mappedBy = "users")
     private List<BoardTrackingEntity> boardTracking = new ArrayList<>();
+
+    // users : unlockStatus = 1 : N
+    @OneToMany(mappedBy = "users")
+    private List<UnlockStatusEntity> unlockStatus = new ArrayList<>();
 }

@@ -21,9 +21,8 @@ import java.util.Map;
 @RequiredArgsConstructor
 @Slf4j
 @RequestMapping("/auth")
-public class UserContoller {
+public class UserController {
     private final UserService userService;
-
     private final TokenProvider tokenProvider;
 
     @PostMapping("/signin")
