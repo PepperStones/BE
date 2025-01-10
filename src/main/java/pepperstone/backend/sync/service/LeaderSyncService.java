@@ -3,10 +3,10 @@ package pepperstone.backend.sync.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import pepperstone.backend.common.entity.JobQuestProgressEntity;
-import pepperstone.backend.common.entity.JobQuestsEntity;
-import pepperstone.backend.common.entity.UserEntity;
+import pepperstone.backend.common.entity.*;
 import pepperstone.backend.common.entity.enums.Period;
+import pepperstone.backend.common.repository.LeaderQuestProgressRepository;
+import pepperstone.backend.common.repository.LeaderQuestRepository;
 import pepperstone.backend.common.repository.UserRepository;
 
 import java.time.LocalDate;
@@ -16,7 +16,8 @@ import java.util.*;
 @RequiredArgsConstructor
 public class LeaderSyncService {
     private final SyncService syncService;
-
+    private final LeaderQuestRepository leaderQuestRepository;
+    private final LeaderQuestProgressRepository leaderQuestProgressRepository;
     private final UserRepository userRepository;
 
     private static final String RANGE = "'참고. 리더부여 퀘스트'!A1:Z100";
@@ -29,54 +30,104 @@ public class LeaderSyncService {
             throw new RuntimeException("Insufficient data in the spreadsheet.");
         }
 
-        String department = data.get(18).get(12).toString().trim(); // 소속 센터
-        String jobGroup = data.get(18).get(13).toString().trim(); // 소속 그룹
+        // 사원 정보 및 퀘스트 정보 가져오기
+        List<Map<String, Object>> peopleList = peopleList(data);
+        List<Map<String, Object>> questList = questList(data);
+        List<Map<String, Object>> questProgressList = questProgressList(data);
 
-        // 소속 인원 정보
-        // 퀘스트 정보를 저장할 리스트
-        List<Map<String, Object>> peopleList = new ArrayList<>();
-        peopleList = peopleList(data);
-
-        // 퀘스트 정보를 저장할 리스트
-        List<Map<String, Object>> questList = new ArrayList<>();
-        questList = questList(data);
-
-        // 퀘스트 달성 정보 저장 리스트
-        List<Map<String, Object>> questProgressList = new ArrayList<>();
-        questProgressList = questProgressList(data);
-
-
-
-/*        // 퀘스트 달성 정보 저장
+        // 퀘스트 동기화 시작
         for (Map<String, Object> person : peopleList) {
-            String personCompanyNum = person.get("companyNum").toString();
+            String companyNum = person.get("companyNum").toString();
+            String name = person.get("name").toString();
 
-            // 해당 사원의 퀘스트 달성 정보 필터링
-            List<Map<String, Object>> personAchievements = questProgressList.stream()
-                    .filter(quest -> quest.get("companyNum").equals(personCompanyNum))
-                    .toList();
+            // users 테이블에서 해당 사원 조회
+            UserEntity user = userRepository.findByCompanyNumAndName(companyNum, name)
+                    .orElseThrow(() -> new RuntimeException("User not found: " + companyNum + ", " + name));
 
-            if (personAchievements.isEmpty()) continue;
+            // 각 퀘스트에 대해 동기화 처리
+            for (Map<String, Object> questInfo : questList) {
+                String questName = questInfo.get("questName").toString();
+                Period period = (Period) questInfo.get("period");
 
-            // 출력: 해당 사원에 대한 퀘스트 달성 정보
-            System.out.println("사원 정보:");
-            System.out.println("사번: " + personCompanyNum + ", 이름: " + person.get("name"));
+                // LeaderQuestsEntity 조회 또는 생성
+                LeaderQuestsEntity leaderQuest = leaderQuestRepository.findByDepartmentAndJobGroupAndQuestName(
+                                user.getJobGroup().getCenterGroup().getCenterName(),
+                                user.getJobGroup().getJobName(),
+                                questName)
+                        .orElseGet(() -> {
+                            // 새로운 리더 퀘스트 생성
+                            LeaderQuestsEntity newQuest = new LeaderQuestsEntity();
+                            newQuest.setDepartment(user.getJobGroup().getCenterGroup().getCenterName());
+                            newQuest.setJobGroup(user.getJobGroup().getJobName());
+                            newQuest.setQuestName(questName);
+                            newQuest.setPeriod(period);
+                            newQuest.setMaxPoints((Integer) questInfo.get("maxPoints"));
+                            newQuest.setMedianPoints((Integer) questInfo.get("medianPoints"));
+                            newQuest.setWeight((Integer) questInfo.get("weight"));
+                            newQuest.setMaxCondition(questInfo.get("maxCondition").toString());
+                            newQuest.setMedianCondition(questInfo.get("medianCondition").toString());
+                            return leaderQuestRepository.save(newQuest);
+                        });
 
-            for (Map<String, Object> achievement : personAchievements) {
-                String monthOrWeek = achievement.get("monthOrWeek").toString();
-                String questName = achievement.get("questName").toString();
-                String achievementType = achievement.get("achievementType").toString();
-                int experience = (int) achievement.get("experience");
+                // 해당 사원의 퀘스트 달성 정보 필터링
+                List<Map<String, Object>> personAchievements = questProgressList.stream()
+                        .filter(quest -> quest.get("companyNum").equals(companyNum) && quest.get("questName").equals(questName))
+                        .toList();
 
-                // 출력: 퀘스트 달성 정보
-                System.out.println("  월/주: " + monthOrWeek);
-                System.out.println("  퀘스트명: " + questName);
-                System.out.println("  달성 유형: " + achievementType);
-                System.out.println("  부여 경험치: " + experience);
-                System.out.println("---------------------------");
+                // 각 달성 정보에 대해 진행 상황 추가 또는 업데이트
+                for (Map<String, Object> achievement : personAchievements) {
+                    int monthOrWeek = (int) achievement.get("monthOrWeek");
+                    String achievementType = achievement.get("achievementType").toString();
+                    int experience = (int) achievement.get("experience");
+
+                    // 주기별 처리: 주별 또는 월별로 구분하여 진행 상황 업데이트
+                    if (period == Period.WEEKLY) {
+                        addOrUpdateProgress(user, leaderQuest, monthOrWeek, experience, achievementType, true);
+                    } else {
+                        addOrUpdateProgress(user, leaderQuest, monthOrWeek, experience, achievementType, false);
+                    }
+                }
             }
-        }*/
+        }
+    }
 
+    private void addOrUpdateProgress(UserEntity user, LeaderQuestsEntity leaderQuest, int weekOrMonth,
+                                     int experience, String achievementType, boolean isWeekly) {
+
+        // 주기별 진행 상황 조회
+        Optional<LeaderQuestProgressEntity> existingProgress = isWeekly
+                ? leaderQuestProgressRepository.findByLeaderQuestsAndUsersAndWeek(leaderQuest, user, weekOrMonth)
+                : leaderQuestProgressRepository.findByLeaderQuestsAndUsersAndMonth(leaderQuest, user, weekOrMonth);
+
+        if (existingProgress.isEmpty()) {
+            // 누적 경험치 계산: 가장 최신 week 또는 month 기준으로 진행 정보 조회
+            int accumulatedExperience = isWeekly
+                    ? leaderQuestProgressRepository.findTopByLeaderQuestsAndUsersOrderByWeekDesc(leaderQuest, user)
+                    .map(progress -> progress.getAccumulatedExperience() + progress.getExperience())
+                    .orElse(0)
+                    : leaderQuestProgressRepository.findTopByLeaderQuestsAndUsersOrderByMonthDesc(leaderQuest, user)
+                    .map(progress -> progress.getAccumulatedExperience() + progress.getExperience())
+                    .orElse(0);
+
+            // 새로운 LeaderQuestProgressEntity 생성 및 저장
+            LeaderQuestProgressEntity newProgress = new LeaderQuestProgressEntity();
+            newProgress.setLeaderQuests(leaderQuest);
+            newProgress.setUsers(user);
+            newProgress.setAchievement(achievementType);
+            newProgress.setExperience(experience);
+            newProgress.setAccumulatedExperience(accumulatedExperience);
+            newProgress.setCreatedAt(LocalDate.now());
+
+            if (isWeekly) {
+                newProgress.setWeek(weekOrMonth);
+                newProgress.setMonth(null);
+            } else {
+                newProgress.setMonth(weekOrMonth);
+                newProgress.setWeek(null);
+            }
+
+            leaderQuestProgressRepository.save(newProgress);
+        }
     }
 
     private int parseInteger(List<Object> row, int index) {
