@@ -30,9 +30,10 @@ public class SyncController {
             List<Map<String, Object>> values = new ArrayList<>();
             switch (type) {
                 case "all" -> {
-                    values = jobSyncService.sync(SPREADSHEET_ID);
+                    //values = jobSyncService.sync(SPREADSHEET_ID);
+                    jobSyncService.sync(SPREADSHEET_ID);
                 }
-                case "job" -> values = jobSyncService.sync(SPREADSHEET_ID);
+                case "job" -> jobSyncService.sync(SPREADSHEET_ID);
                 case "leader" -> {
                 }
                 case "project" -> {
