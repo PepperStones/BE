@@ -65,7 +65,7 @@ public class SyncController {
             // 잘못된 요청에 대한 처리
             response.put("code", 400);
             response.put("message", e.getMessage());
-            response.put("data", Collections.emptyList());
+            response.put("data", type);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
 
         } catch (Exception e) {
