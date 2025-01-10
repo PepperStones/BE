@@ -30,14 +30,15 @@ public class JobSyncService {
             throw new RuntimeException("Insufficient data in the spreadsheet.");
         }
 
-        List<Object> row = data.get(10);
-        String department = row.get(5).toString().trim();
-        String jobGroup = row.get(6).toString().trim();
-        String periodStr = row.get(7).toString().trim();
-        int maxScore = parseInteger(row, 1);
-        int mediumScore = parseInteger(row, 2);
-        double maxStandard = parseDouble(data.get(13), 5);
-        double mediumStandard = parseDouble(data.get(13), 6);
+        // 11번째 행에서 정보 읽기
+        List<Object> row11 = data.get(10);
+        String department = row11.get(5).toString().trim(); // 소속 센터
+        String jobGroup = row11.get(6).toString().trim(); // 소속 그룹
+        String periodStr = row11.get(7).toString().trim(); // 주기
+        int maxScore = parseInteger(row11, 1); // max 점수
+        int mediumScore = parseInteger(row11, 2); // medium 점수
+        double maxStandard = parseDouble(data.get(13), 5); // max 기준
+        double mediumStandard = parseDouble(data.get(13), 6); // medium 기준
         Period period = periodStr.equals("주") ? Period.WEEKLY : Period.MONTHLY;
 
         // JobQuestsEntity 동기화 -> 조회 후, 없다면 생성o / 있다면 생성x
@@ -60,32 +61,45 @@ public class JobSyncService {
 /*        for (UserEntity user : users) {
             System.out.println("User ID: " + user.getId() + ", Name: " + user.getName());
         }*/
-/*        for (UserEntity user : users) {
-            Optional<JobQuestProgressEntity> existingProgress = jobQuestProgressRepository.findByJobQuestId(jobQuest.getId())
-                    .stream()
-                    .filter(progress -> progress.getUsers().getId().equals(user.getId()) && progress.getWeek() == getCurrentWeek())
-                    .findFirst();
+        for (UserEntity user : users) {
+            // jobQuest와 user로 jobQuestProgress를 조회
+            List<JobQuestProgressEntity> progressList = jobQuestProgressRepository.findByJobQuestAndUsers(jobQuest, user);
+            // week값이 가장 높은 jobQuestProgress를 조회
+            JobQuestProgressEntity latestProgress = progressList.stream()
+                    .max(Comparator.comparingInt(JobQuestProgressEntity::getWeek))
+                    .orElse(null);
 
-            if (existingProgress.isEmpty()) {
-                // 새로운 JobQuestProgress 생성
-                JobQuestProgressEntity progress = new JobQuestProgressEntity();
-                progress.setJobQuest(jobQuest);
-                progress.setUsers(user);
-                progress.setWeek(getCurrentWeek());
-                progress.setCreatedAt(LocalDate.now());
-                progress.setProductivity(0.0);
-                progress.setExperience(0);
-                progress.setAccumulatedExperience(user.getAccumulatedExperience());
-                jobQuestProgressRepository.save(progress);
+            int currentWeek;
+            int accumulatedExperience;
+            if (latestProgress == null) {
+                // 진행 상태가 없는 경우, 1주차로 새로 생성
+                currentWeek = 1;
+                accumulatedExperience = 0;
             } else {
-                // 기존 JobQuestProgress 업데이트
-                JobQuestProgressEntity progress = existingProgress.get();
-                progress.setProductivity(0.0); // 생산성 초기화
-                progress.setExperience(0);     // 경험치 초기화
-                progress.setAccumulatedExperience(user.getAccumulatedExperience());
-                jobQuestProgressRepository.save(progress);
+                // 가장 최근 진행 상태의 week에 +1
+                currentWeek = latestProgress.getWeek() + 1;
+                accumulatedExperience = latestProgress.getAccumulatedExperience() + latestProgress.getExperience();
             }
-        }*/
+
+            List<Object> rowExp = data.get(12 + currentWeek);
+            // 12 + currentWeek 행의 경험치 열이 비어있는 경우 예외처리
+            if (rowExp == null || rowExp.get(2) == null || rowExp.get(2).toString().isEmpty()) {
+                throw new RuntimeException("해당 주차에 부여된 경험치가 없습니다. 주차: " + currentWeek);
+            }
+
+            int experience = parseInteger(rowExp, 2); // 해당 주차에 맞는 부여 경험치
+            double productivity = parseDouble(rowExp, 8); // 해당 주차에 맞는 생산성
+
+            JobQuestProgressEntity newProgress = new JobQuestProgressEntity();
+            newProgress.setJobQuest(jobQuest);
+            newProgress.setUsers(user);
+            newProgress.setWeek(currentWeek);
+            newProgress.setCreatedAt(LocalDate.now());
+            newProgress.setProductivity(productivity);
+            newProgress.setExperience(experience);
+            newProgress.setAccumulatedExperience(accumulatedExperience);
+            jobQuestProgressRepository.save(newProgress);
+        }
     }
 
     private int parseInteger(List<Object> row, int index) {
