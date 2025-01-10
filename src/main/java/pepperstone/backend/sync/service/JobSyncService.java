@@ -1,4 +1,3 @@
-// JobSyncService.java
 package pepperstone.backend.sync.service;
 
 import lombok.RequiredArgsConstructor;
