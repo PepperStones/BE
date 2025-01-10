@@ -90,6 +90,28 @@ public class MypageController {
         }
     }
 
+    @GetMapping("/star")
+    public ResponseEntity<Map<String, Object>> getStarInfo(@AuthenticationPrincipal UserEntity userInfo) {
+        try {
+            final UserEntity user = mypageService.getUserInfo(userInfo.getId());
+
+            if (user == null)
+                throw new IllegalArgumentException("나의 정보가 없습니다.");
+
+            final StarResponseDTO resDTO = StarResponseDTO.builder()
+                    .skin(user.getSkin())
+                    .decoration(user.getDecoration())
+                    .effect(user.getEffect())
+                    .build();
+
+            return ResponseEntity.ok().body(Map.of("code", 200, "data", resDTO));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("code", 400, "data", e.getMessage()));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(500).body(Map.of("code", 500, "data", "나의 정보 불러오기 오류. 잠시 후 다시 시도해주세요."));
+        }
+    }
+
     @PatchMapping("/star")
     public ResponseEntity<Map<String, Object>> updateStar(@AuthenticationPrincipal UserEntity userInfo, @RequestBody UpdateStarRequestDTO dto) {
         try {
