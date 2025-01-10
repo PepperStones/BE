@@ -1,4 +1,4 @@
-package pepperstone.backend.mypage.dto;
+package pepperstone.backend.mypage.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -6,7 +6,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import pepperstone.backend.common.entity.enums.EvaluationPeriod;
 import pepperstone.backend.common.entity.enums.Grade;
-import pepperstone.backend.common.entity.enums.Level;
 
 import java.time.LocalDate;
 
@@ -19,7 +18,6 @@ public class MyInfoResponseDTO {
     private String name;
     private String companyNum;
     private LocalDate joinDate;
-//    private Level level;
     private String level;
     private EvaluationPeriod evaluationPeriod;
     private Grade grade;
