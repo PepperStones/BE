@@ -114,8 +114,4 @@ public class JobSyncService {
             return 0.0;
         }
     }
-
-    private int getCurrentWeek() {
-        return LocalDate.now().getDayOfYear() / 7 + 1;
-    }
 }
