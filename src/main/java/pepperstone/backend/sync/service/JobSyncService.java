@@ -58,9 +58,6 @@ public class JobSyncService {
         // 해당 직무 그룹과 센터 그룹에 속한 유저 조회
         List<UserEntity> users = userRepository.findByJobGroupJobNameAndJobGroupCenterGroupCenterName(jobGroup, department);
 
-/*        for (UserEntity user : users) {
-            System.out.println("User ID: " + user.getId() + ", Name: " + user.getName());
-        }*/
         for (UserEntity user : users) {
             // jobQuest와 user로 jobQuestProgress를 조회
             List<JobQuestProgressEntity> progressList = jobQuestProgressRepository.findByJobQuestAndUsers(jobQuest, user);
