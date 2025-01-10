@@ -1,10 +1,10 @@
-package pepperstone.backend.googlesheet.controller;
+package pepperstone.backend.sync.deprecated.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import pepperstone.backend.googlesheet.service.GoogleService;
+import pepperstone.backend.sync.deprecated.service.GoogleService;
 
 import java.util.Collections;
 import java.util.List;
