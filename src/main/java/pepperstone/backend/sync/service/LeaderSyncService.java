@@ -140,7 +140,7 @@ public class LeaderSyncService {
 
     // 사원 정보를 저장한 리스트 반환 메서드
     private List<Map<String, Object>> peopleList(List<List<Object>> data){
-        // 퀘스트 정보를 저장할 리스트
+        // 사원 정보를 저장할 리스트
         List<Map<String, Object>> peopleList = new ArrayList<>();
 
         // 19번째 행에서 정보 읽기

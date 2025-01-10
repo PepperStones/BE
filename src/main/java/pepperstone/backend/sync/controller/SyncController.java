@@ -31,7 +31,7 @@ public class SyncController {
                 case "all" -> {
                     jobSyncService.sync(SPREADSHEET_ID);
                     leaderSyncService.sync(SPREADSHEET_ID);
-                    //projectSyncService.sync(SPREADSHEET_ID);
+                    projectSyncService.sync(SPREADSHEET_ID);
                     //evaluationSyncService.sync(SPREADSHEET_ID);
                     message = "전체 동기화가 완료되었습니다.";
                 }
@@ -44,7 +44,7 @@ public class SyncController {
                     message = "리더부여 퀘스트 동기화가 완료되었습니다.";
                 }
                 case "project" -> {
-                    //projectSyncService.sync(SPREADSHEET_ID);
+                    projectSyncService.sync(SPREADSHEET_ID);
                     message = "전사 프로젝트 동기화가 완료되었습니다.";
                 }
                 case "evaluation" -> {
