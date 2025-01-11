@@ -47,3 +47,6 @@ src/main/resources/application.yml
 
 ## 리소스
 **/google.json
+
+## FCM 비공개키
+src/main/resources/firebase/pepperstone-firebase-adminsdk.json
