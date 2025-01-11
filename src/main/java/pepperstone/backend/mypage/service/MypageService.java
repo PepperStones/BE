@@ -9,7 +9,7 @@ import pepperstone.backend.common.entity.UserEntity;
 import pepperstone.backend.common.entity.enums.*;
 import pepperstone.backend.common.repository.PerformanceEvaluationRepository;
 import pepperstone.backend.common.repository.UnlockStatusRepository;
-import pepperstone.backend.common.repository.UserRespository;
+import pepperstone.backend.common.repository.UserRepository;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -19,7 +19,7 @@ import java.util.Objects;
 @Slf4j
 @Service
 public class MypageService {
-    private final UserRespository userRepo;
+    private final UserRepository userRepo;
     private final PerformanceEvaluationRepository performanceEvaluationRepo;
     private final UnlockStatusRepository unlockStatusRepo;
 
