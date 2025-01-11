@@ -10,11 +10,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import pepperstone.backend.common.entity.UserEntity;
+import pepperstone.backend.member.dto.MemberInfoResponseDTO;
 import pepperstone.backend.member.dto.MembersResponseDTO;
 import pepperstone.backend.member.service.MemberService;
 
@@ -51,6 +49,35 @@ public class MemberController {
                             .jobGroup(member.getJobGroup().getJobName())
                             .build())
                     .toList();
+
+            return ResponseEntity.ok().body(Map.of("code", 200, "data", resDTO));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("code", 400, "data", e.getMessage()));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(500).body(Map.of("code", 500, "data", "나의 정보 불러오기 오류. 잠시 후 다시 시도해주세요."));
+        }
+    }
+
+    @GetMapping("/{userId}")
+    public ResponseEntity<Map<String, Object>> getMemberInfo(@PathVariable Long userId) {
+        try {
+            final UserEntity user = memberService.getUserInfo(userId);
+
+            if (user == null)
+                throw new IllegalArgumentException("유저 정보가 없습니다.");
+
+            final MemberInfoResponseDTO resDTO = MemberInfoResponseDTO.builder()
+                    .id(user.getId())
+                    .companyNum(user.getCompanyNum())
+                    .name(user.getName())
+                    .joinDate(user.getJoinDate())
+                    .centerGroup(user.getJobGroup().getCenterGroup().getCenterName())
+                    .jobGroup(user.getJobGroup().getJobName())
+                    .level(user.getLevel())
+                    .userId(user.getUserId())
+                    .initPassword(user.getInitPassword())
+                    .password(user.getPassword())
+                    .build();
 
             return ResponseEntity.ok().body(Map.of("code", 200, "data", resDTO));
         } catch (IllegalArgumentException e) {

@@ -29,6 +29,9 @@ public class UserEntity {
     private String password; // 비밀번호
 
     @Column(nullable = false)
+    private String initPassword; // 기본 비밀번호
+
+    @Column(nullable = false)
     private String name; // 이름
 
     @Column(nullable = false)

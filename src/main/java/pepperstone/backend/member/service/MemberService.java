@@ -33,4 +33,8 @@ public class MemberService {
                 pageable
         );
     }
+
+    public UserEntity getUserInfo(final Long userId) {
+        return userRepo.findById(userId).orElse(null);
+    }
 }
