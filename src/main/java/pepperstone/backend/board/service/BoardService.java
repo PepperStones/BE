@@ -33,7 +33,7 @@ public class BoardService {
         return centerGroupRepo.existsByCenterName(centerGroup);
     }
 
-    public void addBoard(final BoardsEntity board) {
+    public void addOrUpdateBoard(final BoardsEntity board) {
         boardsRepo.save(board);
     }
 

@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import pepperstone.backend.board.dto.request.BoardRequestDTO;
+import pepperstone.backend.board.dto.request.BoardUpdateRequestDTO;
 import pepperstone.backend.board.dto.response.BoardListResponseDTO;
 import pepperstone.backend.board.dto.response.BoardResponseDTO;
 import pepperstone.backend.board.service.BoardService;
@@ -56,7 +57,7 @@ public class BoardController {
             if (StringUtils.isNotBlank(dto.getJobGroup()))
                 board.setJobGroup(dto.getJobGroup());
 
-            boardService.addBoard(board);
+            boardService.addOrUpdateBoard(board);
 
             return ResponseEntity.ok().body(Map.of("code", 200, "data", true));
         } catch (IllegalArgumentException e) {
@@ -135,6 +136,40 @@ public class BoardController {
             return ResponseEntity.badRequest().body(Map.of("code", 400, "data", e.getMessage()));
         } catch (RuntimeException e) {
             return ResponseEntity.status(500).body(Map.of("code", 500, "data", "게시글 삭제하기 오류. 잠시 후 다시 시도해주세요."));
+        }
+    }
+
+    @PatchMapping("/{boardId}")
+    public ResponseEntity<Map<String, Object>> updateBoard(@AuthenticationPrincipal UserEntity userInfo,
+                                                           @PathVariable("boardId") Long boardId,
+                                                           @RequestBody BoardUpdateRequestDTO dto) {
+        try {
+            if (!boardService.isAdmin(userInfo.getId()))
+                throw new IllegalArgumentException("어드민이 아닙니다.");
+
+            final BoardsEntity board = boardService.getBoard(boardId);
+
+            if (StringUtils.isNotBlank(dto.getCenterGroup()))
+                board.setCenterGroup(dto.getCenterGroup());
+
+            if (StringUtils.isNotBlank(dto.getJobGroup()))
+                board.setJobGroup(dto.getJobGroup());
+
+            if (StringUtils.isNotBlank(dto.getTitle()))
+                board.setTitle(dto.getTitle());
+
+            if (StringUtils.isNotBlank(dto.getContent()))
+                board.setContent(dto.getContent());
+
+            board.setUpdatedAt(LocalDateTime.now());
+
+            boardService.addOrUpdateBoard(board);
+
+            return ResponseEntity.ok().body(Map.of("code", 200, "data", true));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("code", 400, "data", e.getMessage()));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(500).body(Map.of("code", 500, "data", "게시글 수정하기 오류. 잠시 후 다시 시도해주세요."));
         }
     }
 }
