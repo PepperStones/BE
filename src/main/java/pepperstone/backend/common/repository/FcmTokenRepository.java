@@ -1,4 +1,4 @@
-package pepperstone.backend.notification.repository;
+package pepperstone.backend.common.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
