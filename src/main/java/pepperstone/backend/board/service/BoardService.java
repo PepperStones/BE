@@ -49,4 +49,13 @@ public class BoardService {
 
         return board;
     }
+
+    public void deleteBoard(final Long boardId) {
+        final BoardsEntity board = boardsRepo.findById(boardId).orElse(null);
+
+        if (board == null)
+            throw new IllegalArgumentException("게시글이 존재하지 않습니다.");
+
+        boardsRepo.delete(board);
+    }
 }

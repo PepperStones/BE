@@ -62,7 +62,7 @@ public class BoardController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("code", 400, "data", e.getMessage()));
         } catch (RuntimeException e) {
-            return ResponseEntity.status(500).body(Map.of("code", 500, "data", "구성원 정보 불러오기 오류. 잠시 후 다시 시도해주세요."));
+            return ResponseEntity.status(500).body(Map.of("code", 500, "data", "게시글 작성 오류. 잠시 후 다시 시도해주세요."));
         }
     }
 
@@ -119,6 +119,22 @@ public class BoardController {
             return ResponseEntity.badRequest().body(Map.of("code", 400, "data", e.getMessage()));
         } catch (RuntimeException e) {
             return ResponseEntity.status(500).body(Map.of("code", 500, "data", "게시글 세부 내용 불러오기 오류. 잠시 후 다시 시도해주세요."));
+        }
+    }
+
+    @DeleteMapping("/{boardId}")
+    public ResponseEntity<Map<String, Object>> deleteBoard(@AuthenticationPrincipal UserEntity userInfo, @PathVariable("boardId") Long boardId) {
+        try {
+            if (!boardService.isAdmin(userInfo.getId()))
+                throw new IllegalArgumentException("어드민이 아닙니다.");
+
+            boardService.deleteBoard(boardId);
+
+            return ResponseEntity.ok().body(Map.of("code", 200, "data", true));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("code", 400, "data", e.getMessage()));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(500).body(Map.of("code", 500, "data", "게시글 삭제하기 오류. 잠시 후 다시 시도해주세요."));
         }
     }
 }
