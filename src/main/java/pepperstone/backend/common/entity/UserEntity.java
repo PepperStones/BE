@@ -42,7 +42,6 @@ public class UserEntity {
     private Integer accumulatedExperience; // 올해 제외 누적 경험치
 
     @Column(nullable = false)
-//    private Level level; // 레벨
     private String level; // 레벨
 
     @Enumerated(EnumType.STRING)
