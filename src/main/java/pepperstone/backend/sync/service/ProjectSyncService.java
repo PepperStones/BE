@@ -1,20 +1,24 @@
 package pepperstone.backend.sync.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pepperstone.backend.common.entity.ProjectsEntity;
 import pepperstone.backend.common.entity.UserEntity;
 import pepperstone.backend.common.repository.ProjectsRepository;
 import pepperstone.backend.common.repository.UserRepository;
+import pepperstone.backend.notification.service.FcmService;
 
 import java.time.LocalDate;
 import java.util.*;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ProjectSyncService {
     private final SyncService syncService;
+    private final FcmService fcmService;
     private final UserRepository userRepository;
     private final ProjectsRepository projectsRepository;
 
@@ -57,6 +61,14 @@ public class ProjectSyncService {
             project.setCreatedAt(LocalDate.now());
 
             projectsRepository.save(project);
+
+            // 푸시 알림 전송 및 성공 여부 확인
+            int result = fcmService.sendExperienceNotification(user, experience);
+            if (result == 1) {
+                log.info("푸시 알림 전송 성공: 사용자 ID={}, 경험치={}do", user.getId(), experience);
+            } else {
+                log.error("푸시 알림 전송 실패: 사용자 ID={}, 경험치={}do", user.getId(), experience);
+            }
         }
 
     }

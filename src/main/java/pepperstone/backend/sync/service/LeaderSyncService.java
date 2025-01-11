@@ -1,6 +1,7 @@
 package pepperstone.backend.sync.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pepperstone.backend.common.entity.*;
@@ -8,14 +9,17 @@ import pepperstone.backend.common.entity.enums.Period;
 import pepperstone.backend.common.repository.LeaderQuestProgressRepository;
 import pepperstone.backend.common.repository.LeaderQuestRepository;
 import pepperstone.backend.common.repository.UserRepository;
+import pepperstone.backend.notification.service.FcmService;
 
 import java.time.LocalDate;
 import java.util.*;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class LeaderSyncService {
     private final SyncService syncService;
+    private final FcmService fcmService;
     private final LeaderQuestRepository leaderQuestRepository;
     private final LeaderQuestProgressRepository leaderQuestProgressRepository;
     private final UserRepository userRepository;
@@ -127,6 +131,14 @@ public class LeaderSyncService {
             }
 
             leaderQuestProgressRepository.save(newProgress);
+
+            // 푸시 알림 전송
+            int result = fcmService.sendExperienceNotification(user, experience);
+            if (result == 1) {
+                log.info("리더 퀘스트 푸시 알림 전송 성공: 사용자 ID={}, 경험치={}do", user.getId(), experience);
+            } else {
+                log.error("리더 퀘스트 푸시 알림 전송 실패: 사용자 ID={}, 경험치={}do", user.getId(), experience);
+            }
         }
     }
 

@@ -7,4 +7,5 @@ import pepperstone.backend.common.entity.UserEntity;
 public interface FcmService {
     void sendPushNotification(String title, String body, String token);
     void saveFcmToken(String token, UserEntity user);
+    int sendExperienceNotification(UserEntity user, int experience);
 }
