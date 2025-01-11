@@ -25,6 +25,10 @@ public class ChallengeProgressEntity {
     @ColumnDefault("0")
     private Boolean completed; // 완료 여부
 
+    @Column(nullable = false)
+    @ColumnDefault("0")
+    private Boolean receive; // 수령 여부
+
     // users : challengeProgress = 1 : N
     @ManyToOne(targetEntity = UserEntity.class)
     @JoinColumn(name = "user_id")
