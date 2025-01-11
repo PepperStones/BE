@@ -60,7 +60,7 @@ public class MemberController {
     }
 
     @GetMapping("/{userId}")
-    public ResponseEntity<Map<String, Object>> getMemberInfo(@PathVariable Long userId) {
+    public ResponseEntity<Map<String, Object>> getMemberInfo(@PathVariable("userId") Long userId) {
         try {
             final UserEntity user = memberService.getUserInfo(userId);
 
@@ -89,7 +89,7 @@ public class MemberController {
     }
 
     @DeleteMapping("/{userId}")
-    public ResponseEntity<Map<String, Object>> deleteMember(@PathVariable Long userId) {
+    public ResponseEntity<Map<String, Object>> deleteMember(@PathVariable("userId") Long userId) {
         try {
             final UserEntity user = memberService.getUserInfo(userId);
 
@@ -107,7 +107,7 @@ public class MemberController {
     }
 
     @PatchMapping("/{userId}")
-    public ResponseEntity<Map<String, Object>> updateMember(@PathVariable Long userId, @RequestBody MemberUpdateRequestDTO dto) {
+    public ResponseEntity<Map<String, Object>> updateMember(@PathVariable("userId") Long userId, @RequestBody MemberUpdateRequestDTO dto) {
         try {
             final UserEntity user = memberService.getUserInfo(userId);
 
