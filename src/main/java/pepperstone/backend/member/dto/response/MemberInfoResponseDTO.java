@@ -1,4 +1,4 @@
-package pepperstone.backend.member.dto;
+package pepperstone.backend.member.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

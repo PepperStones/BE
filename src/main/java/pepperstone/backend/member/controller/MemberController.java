@@ -1,5 +1,6 @@
 package pepperstone.backend.member.controller;
 
+import io.micrometer.common.util.StringUtils;
 import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,13 +13,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import pepperstone.backend.common.entity.UserEntity;
-import pepperstone.backend.member.dto.MemberInfoResponseDTO;
-import pepperstone.backend.member.dto.MembersResponseDTO;
+import pepperstone.backend.member.dto.request.MemberUpdateRequestDTO;
+import pepperstone.backend.member.dto.response.MemberInfoResponseDTO;
+import pepperstone.backend.member.dto.response.MembersResponseDTO;
 import pepperstone.backend.member.service.MemberService;
 
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor
@@ -96,6 +97,24 @@ public class MemberController {
                 throw new IllegalArgumentException("유저 정보가 없습니다.");
 
             memberService.deleteMember(userId);
+
+            return ResponseEntity.ok().body(Map.of("code", 200, "data", true));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("code", 400, "data", e.getMessage()));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(500).body(Map.of("code", 500, "data", "나의 정보 불러오기 오류. 잠시 후 다시 시도해주세요."));
+        }
+    }
+
+    @PatchMapping("/{userId}")
+    public ResponseEntity<Map<String, Object>> updateMember(@PathVariable Long userId, @RequestBody MemberUpdateRequestDTO dto) {
+        try {
+            final UserEntity user = memberService.getUserInfo(userId);
+
+            if (user == null)
+                throw new IllegalArgumentException("유저 정보가 없습니다.");
+
+           memberService.updateMember(user, dto);
 
             return ResponseEntity.ok().body(Map.of("code", 200, "data", true));
         } catch (IllegalArgumentException e) {
