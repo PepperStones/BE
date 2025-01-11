@@ -2,6 +2,7 @@ package pepperstone.backend.member.controller;
 
 import io.micrometer.common.util.StringUtils;
 import io.swagger.v3.oas.annotations.Parameter;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springdoc.core.converters.models.PageableAsQueryParam;
@@ -12,7 +13,10 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import pepperstone.backend.common.entity.CenterGroupEntity;
+import pepperstone.backend.common.entity.JobGroupEntity;
 import pepperstone.backend.common.entity.UserEntity;
+import pepperstone.backend.member.dto.request.MemberAddRequestDTO;
 import pepperstone.backend.member.dto.request.MemberUpdateRequestDTO;
 import pepperstone.backend.member.dto.response.MemberInfoResponseDTO;
 import pepperstone.backend.member.dto.response.MembersResponseDTO;
@@ -84,7 +88,7 @@ public class MemberController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("code", 400, "data", e.getMessage()));
         } catch (RuntimeException e) {
-            return ResponseEntity.status(500).body(Map.of("code", 500, "data", "나의 정보 불러오기 오류. 잠시 후 다시 시도해주세요."));
+            return ResponseEntity.status(500).body(Map.of("code", 500, "data", "구성원 정보 불러오기 오류. 잠시 후 다시 시도해주세요."));
         }
     }
 
@@ -102,7 +106,7 @@ public class MemberController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("code", 400, "data", e.getMessage()));
         } catch (RuntimeException e) {
-            return ResponseEntity.status(500).body(Map.of("code", 500, "data", "나의 정보 불러오기 오류. 잠시 후 다시 시도해주세요."));
+            return ResponseEntity.status(500).body(Map.of("code", 500, "data", "구성원 정보 삭제 오류. 잠시 후 다시 시도해주세요."));
         }
     }
 
@@ -120,7 +124,20 @@ public class MemberController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("code", 400, "data", e.getMessage()));
         } catch (RuntimeException e) {
-            return ResponseEntity.status(500).body(Map.of("code", 500, "data", "나의 정보 불러오기 오류. 잠시 후 다시 시도해주세요."));
+            return ResponseEntity.status(500).body(Map.of("code", 500, "data", "구성원 정보 수정 오류. 잠시 후 다시 시도해주세요."));
+        }
+    }
+
+    @PostMapping("/add")
+    public ResponseEntity<Map<String, Object>> addMember(@RequestBody MemberAddRequestDTO dto) {
+        try {
+            memberService.addMemberAndJobGroup(dto);
+
+            return ResponseEntity.ok().body(Map.of("code", 200, "data", true));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("code", 400, "data", e.getMessage()));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(500).body(Map.of("code", 500, "data", "구성원 추가 오류. 잠시 후 다시 시도해주세요."));
         }
     }
 }

@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.BindingResult;
 import pepperstone.backend.common.entity.UserEntity;
-import pepperstone.backend.common.repository.UserRespository;
+import pepperstone.backend.common.repository.UserRepository;
 
 import java.util.Objects;
 
@@ -13,7 +13,7 @@ import java.util.Objects;
 @Slf4j
 @Service
 public class UserService {
-    private final UserRespository userRepo;
+    private final UserRepository userRepo;
 
     public void validation(BindingResult bindingResult, String fieldName) {
         if (bindingResult.hasFieldErrors(fieldName))

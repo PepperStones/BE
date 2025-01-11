@@ -1,24 +1,29 @@
 package pepperstone.backend.member.service;
 
 import io.micrometer.common.util.StringUtils;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import pepperstone.backend.common.entity.CenterGroupEntity;
+import pepperstone.backend.common.entity.JobGroupEntity;
 import pepperstone.backend.common.entity.UserEntity;
 import pepperstone.backend.common.entity.enums.UserRole;
 import pepperstone.backend.common.repository.CenterGroupRepository;
-import pepperstone.backend.common.repository.UserRespository;
+import pepperstone.backend.common.repository.JobGroupReository;
+import pepperstone.backend.common.repository.UserRepository;
+import pepperstone.backend.member.dto.request.MemberAddRequestDTO;
 import pepperstone.backend.member.dto.request.MemberUpdateRequestDTO;
 
 @RequiredArgsConstructor
 @Slf4j
 @Service
 public class MemberService {
-    private final UserRespository userRepo;
+    private final UserRepository userRepo;
     private final CenterGroupRepository centerGroupRepo;
+    private final JobGroupReository jobGroupRepo;
 
     public Boolean isAdmin(final Long userId) {
         final UserEntity user = userRepo.findById(userId).orElse(null);
@@ -72,7 +77,50 @@ public class MemberService {
         userRepo.save(user);
     }
 
+    @Transactional
+    public void addMemberAndJobGroup(MemberAddRequestDTO dto) {
+        try {
+            final JobGroupEntity jobGroup = addJobGroup(dto.getJobGroupName(), dto.getCenterGroup());
+
+            final UserEntity user = UserEntity.builder()
+                    .companyNum(dto.getCompanyNum())
+                    .name(dto.getName())
+                    .joinDate(dto.getJoinDate())
+                    .level(dto.getLevel())
+                    .jobGroup(jobGroup)
+                    .userId(dto.getUserId())
+                    .initPassword(dto.getInitPassword())
+                    .password(dto.getInitPassword())
+                    .role(UserRole.USER)
+                    .build();
+
+            addMember(user);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("구성원 추가 오류. 잠시 후 다시 시도해주세요.");
+        }
+    }
+
+    // ============== private method ================
+
     private boolean isNotBlank(String value) {
         return value != null && !value.trim().isEmpty();
+    }
+
+    private JobGroupEntity addJobGroup(final String jobGroup, final String centerGroup) {
+        final CenterGroupEntity centerInfo = centerGroupRepo.findByCenterName(centerGroup);
+
+        if(centerInfo == null)
+            throw new IllegalArgumentException("존재하지 않는 센터입니다.");
+
+        final JobGroupEntity jobGroupEntity = JobGroupEntity.builder()
+                .jobName(jobGroup)
+                .centerGroup(centerInfo)
+                .build();
+
+        return jobGroupRepo.save(jobGroupEntity);
+    }
+
+    private void addMember(final UserEntity user) {
+        userRepo.save(user);
     }
 }
