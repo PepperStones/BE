@@ -1,4 +1,4 @@
-package pepperstone.backend.board;
+package pepperstone.backend.board.dto.request;
 
 import jakarta.validation.constraints.NotEmpty;
 import lombok.AllArgsConstructor;

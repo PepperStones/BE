@@ -2,6 +2,8 @@ package pepperstone.backend.board.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import pepperstone.backend.common.entity.BoardsEntity;
 import pepperstone.backend.common.entity.UserEntity;
@@ -33,5 +35,9 @@ public class BoardService {
 
     public void addBoard(final BoardsEntity board) {
         boardsRepo.save(board);
+    }
+
+    public Slice<BoardsEntity> getAllBoards(final Pageable pageable) {
+        return boardsRepo.findAll(pageable);
     }
 }

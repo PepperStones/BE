@@ -1,20 +1,25 @@
 package pepperstone.backend.board.controller;
 
 import io.micrometer.common.util.StringUtils;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springdoc.core.converters.models.PageableAsQueryParam;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import pepperstone.backend.board.BoardRequestDTO;
+import org.springframework.web.bind.annotation.*;
+import pepperstone.backend.board.dto.request.BoardRequestDTO;
+import pepperstone.backend.board.dto.response.BoardListResponseDTO;
 import pepperstone.backend.board.service.BoardService;
 import pepperstone.backend.common.entity.BoardsEntity;
 import pepperstone.backend.common.entity.UserEntity;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -57,6 +62,36 @@ public class BoardController {
             return ResponseEntity.badRequest().body(Map.of("code", 400, "data", e.getMessage()));
         } catch (RuntimeException e) {
             return ResponseEntity.status(500).body(Map.of("code", 500, "data", "구성원 정보 불러오기 오류. 잠시 후 다시 시도해주세요."));
+        }
+    }
+
+    @GetMapping("list")
+    @PageableAsQueryParam
+    public ResponseEntity<Map<String, Object>> adminBoardsList(@AuthenticationPrincipal UserEntity userInfo,
+                                                               @Parameter(hidden = true)
+                                                               @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        try {
+            if (!boardService.isAdmin(userInfo.getId()))
+                throw new IllegalArgumentException("어드민이 아닙니다.");
+
+            Slice<BoardsEntity> boards = boardService.getAllBoards(pageable);
+
+            List<BoardListResponseDTO> resDTO = boards.stream()
+                    .map(board -> BoardListResponseDTO.builder()
+                            .id(board.getId())
+                            .centerGroup(board.getCenterGroup())
+                            .jobGroup(board.getJobGroup())
+                            .title(board.getTitle())
+                            .createdAt(board.getCreatedAt())
+                            .updatedAt(board.getUpdatedAt())
+                            .build())
+                    .toList();
+
+            return ResponseEntity.ok().body(Map.of("code", 200, "data", resDTO));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("code", 400, "data", e.getMessage()));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(500).body(Map.of("code", 500, "data", "게시글 불러오기 오류. 잠시 후 다시 시도해주세요."));
         }
     }
 }
