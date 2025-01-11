@@ -36,6 +36,9 @@ public class JobSyncService {
             throw new RuntimeException("Insufficient data in the spreadsheet.");
         }
 
+        // 유저와 부여 경험치를 저장할 맵
+        Map<UserEntity, Integer> experienceMap = new HashMap<>();
+
         // 11번째 행에서 정보 읽기
         List<Object> row11 = data.get(10);
         String department = row11.get(5).toString().trim(); // 소속 센터
@@ -104,20 +107,34 @@ public class JobSyncService {
             newProgress.setAccumulatedExperience(accumulatedExperience);
             jobQuestProgressRepository.save(newProgress);
 
-            // 푸시 알림 전송
-            fcmService.sendExperienceNotification(user, experience);
+            // 경험치 누적
+            experienceMap.put(user, experienceMap.getOrDefault(user, 0) + experience);
 
             // 도전 과제(직무별 퀘스트의 MAX) 달성 체크 로직
             if (isMaxAchieved) {
                 checkAndUpdateChallenge(user);
             }
         }
+
+        // 모든 동기화 완료 후, 한 번에 푸시 알림 전송
+        experienceMap.forEach((user, totalExperience) ->
+                fcmService.sendExperienceNotification(user, totalExperience)
+        );
     }
 
     private void checkAndUpdateChallenge(UserEntity user) {
-        // "직무별 퀘스트 MAX 기준 10회 달성" 도전 과제 조회
+        // "직무별 퀘스트 MAX 기준 10회 달성" 도전 과제 조회 또는 생성
         ChallengesEntity challenge = challengesRepository.findByType(ChallengeType.JOB_QUEST_MAX)
-                .orElseThrow(() -> new RuntimeException("Challenge not found"));
+                .orElseGet(() -> {
+                    // 도전 과제 초기값 설정
+                    ChallengesEntity newChallenge = ChallengesEntity.builder()
+                            .name("직무별 퀘스트 MAX 기준 10회 달성")
+                            .description("직무별 퀘스트에서 MAX 기준을 10회 달성하세요!")
+                            .requiredCount(10)
+                            .type(ChallengeType.JOB_QUEST_MAX)
+                            .build();
+                    return challengesRepository.save(newChallenge);
+                });
 
         // 해당 유저의 도전 과제 진행 상황 조회
         ChallengeProgressEntity progress = challengeProgressRepository.findByUsersAndChallenges(user, challenge)
@@ -127,6 +144,7 @@ public class JobSyncService {
                     newProgress.setChallenges(challenge);
                     newProgress.setCurrentCount(0);
                     newProgress.setCompleted(false);
+                    newProgress.setReceive(false);
                     return challengeProgressRepository.save(newProgress);
                 });
 
