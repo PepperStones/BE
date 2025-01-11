@@ -10,4 +10,5 @@ public interface FcmService {
     void saveFcmToken(String token, UserEntity user);
     void sendExperienceNotification(UserEntity user, int experience);
     void sendEvaluationNotification(UserEntity user, EvaluationPeriod period);
+    void sendPushChallenge(UserEntity user, String title, String content);
 }

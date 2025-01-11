@@ -147,6 +147,40 @@ public class FcmServiceImpl implements FcmService {
         }
     }
 
+    @Override
+    public void sendPushChallenge(UserEntity user, String title, String body) {
+        List<String> fcmTokens = fcmRepository.findByUsers(user)
+                .stream()
+                .map(fcm -> fcm.getToken())
+                .toList();
+
+        int successCount = 0;
+        for (String token : fcmTokens) {
+            try {
+                sendPushNotification(title, body, token);
+                successCount++;
+            } catch (Exception e) {
+                log.error("Error sending push notification to user {}: {}", user.getId(), e.getMessage());
+            }
+        }
+        // 푸시 알림 정보를 PushEntity로 저장
+        PushEntity push = new PushEntity();
+        push.setUsers(user);
+        push.setTitle(title);
+        push.setContent(body);
+        push.setCreatedAt(LocalDate.now());
+        push.setOpen(false); // 기본값 false로 설정
+
+        pushRepository.save(push);
+        log.info("푸시 알림 정보 저장 완료: 사용자 ID={}, 제목={}", user.getId(), push.getTitle());
+
+        if (successCount == fcmTokens.size()) {
+            log.info("푸시 알림 전송 성공: 사용자 ID={}", user.getId());
+        } else {
+            log.warn("푸시 알림 전송 실패: 사용자 ID={}", user.getId());
+        }
+    }
+
     // FCM 메시지를 실제로 전송하는 메서드
     private int sendMessageTo(FcmSendDto fcmSendDto) throws IOException {
         // 메시지를 JSON 문자열로 생성

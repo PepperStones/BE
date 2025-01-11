@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pepperstone.backend.common.entity.*;
+import pepperstone.backend.common.entity.enums.ChallengeType;
 import pepperstone.backend.common.entity.enums.Period;
 import pepperstone.backend.common.repository.*;
 import pepperstone.backend.notification.service.FcmService;
@@ -22,6 +23,8 @@ public class JobSyncService {
     private final JobQuestRepository jobQuestRepository;
     private final JobQuestProgressRepository jobQuestProgressRepository;
     private final UserRepository userRepository;
+    private final ChallengeProgressRepository challengeProgressRepository;
+    private final ChallengesRepository challengesRepository;
 
     private static final String RANGE = "'참고. 직무별 퀘스트'!A1:Z100";
 
@@ -32,6 +35,9 @@ public class JobSyncService {
         if (data == null || data.size() <= 10) {
             throw new RuntimeException("Insufficient data in the spreadsheet.");
         }
+
+        // 유저와 부여 경험치를 저장할 맵
+        Map<UserEntity, Integer> experienceMap = new HashMap<>();
 
         // 11번째 행에서 정보 읽기
         List<Object> row11 = data.get(10);
@@ -89,6 +95,7 @@ public class JobSyncService {
 
             int experience = parseInteger(rowExp, 2); // 해당 주차에 맞는 부여 경험치
             double productivity = parseDouble(rowExp, 8); // 해당 주차에 맞는 생산성
+            boolean isMaxAchieved = experience >= maxScore; // MAX 달성 여부
 
             JobQuestProgressEntity newProgress = new JobQuestProgressEntity();
             newProgress.setJobQuest(jobQuest);
@@ -100,10 +107,66 @@ public class JobSyncService {
             newProgress.setAccumulatedExperience(accumulatedExperience);
             jobQuestProgressRepository.save(newProgress);
 
-            // 푸시 알림 전송
-            fcmService.sendExperienceNotification(user, experience);
+            // 유저 & 경험치 추가
+            experienceMap.put(user, experienceMap.getOrDefault(user, 0) + experience);
+
+            // 도전 과제(직무별 퀘스트의 MAX) 달성 체크 로직
+            if (isMaxAchieved) {
+                checkAndUpdateChallenge(user);
+            }
         }
+
+        // 모든 동기화 완료 후, 한 번에 푸시 알림 전송
+        experienceMap.forEach((user, totalExperience) ->
+                fcmService.sendExperienceNotification(user, totalExperience)
+        );
     }
+
+    private void checkAndUpdateChallenge(UserEntity user) {
+        // "직무별 퀘스트 MAX 기준 10회 달성" 도전 과제 조회 또는 생성
+        ChallengesEntity challenge = challengesRepository.findByType(ChallengeType.JOB_QUEST_MAX)
+                .orElseGet(() -> {
+                    // 도전 과제 초기값 설정
+                    ChallengesEntity newChallenge = ChallengesEntity.builder()
+                            .name("직무별 퀘스트 MAX 기준 10회 달성")
+                            .description("직무별 퀘스트에서 MAX 기준을 10회 달성해보세요!")
+                            .requiredCount(10)
+                            .type(ChallengeType.JOB_QUEST_MAX)
+                            .build();
+                    return challengesRepository.save(newChallenge);
+                });
+
+        // 해당 유저의 도전 과제 진행 상황 조회
+        ChallengeProgressEntity progress = challengeProgressRepository.findByUsersAndChallenges(user, challenge)
+                .orElseGet(() -> { // 없다면 생성
+                    ChallengeProgressEntity newProgress = new ChallengeProgressEntity();
+                    newProgress.setUsers(user);
+                    newProgress.setChallenges(challenge);
+                    newProgress.setCurrentCount(0);
+                    newProgress.setCompleted(false);
+                    newProgress.setReceive(false);
+                    return challengeProgressRepository.save(newProgress);
+                });
+
+        // 이미 완료된 경우 로직 종료
+        if (progress.getCompleted()) {
+            return;
+        }
+
+        // 진행 상황 업데이트
+        progress.setCurrentCount(progress.getCurrentCount() + 1);
+        if (progress.getCurrentCount() >= challenge.getRequiredCount()) {
+            progress.setCompleted(true);
+
+            // 푸시 알림 전송
+            String title = "도전과제 달성!";
+            String body = "도전과제를 달성하셨습니다! 더 자세한 내용은 홈 탭 > 도전과제에서 확인해보세요.";
+            fcmService.sendPushChallenge(user, title, body);
+        }
+
+        challengeProgressRepository.save(progress);
+    }
+
 
     private int parseInteger(List<Object> row, int index) {
         try {

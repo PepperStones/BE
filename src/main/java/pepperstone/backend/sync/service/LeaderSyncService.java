@@ -5,14 +5,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pepperstone.backend.common.entity.*;
+import pepperstone.backend.common.entity.enums.ChallengeType;
 import pepperstone.backend.common.entity.enums.Period;
-import pepperstone.backend.common.repository.LeaderQuestProgressRepository;
-import pepperstone.backend.common.repository.LeaderQuestRepository;
-import pepperstone.backend.common.repository.UserRepository;
+import pepperstone.backend.common.repository.*;
 import pepperstone.backend.notification.service.FcmService;
 
 import java.time.LocalDate;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -23,6 +23,8 @@ public class LeaderSyncService {
     private final LeaderQuestRepository leaderQuestRepository;
     private final LeaderQuestProgressRepository leaderQuestProgressRepository;
     private final UserRepository userRepository;
+    private final ChallengeProgressRepository challengeProgressRepository;
+    private final ChallengesRepository challengesRepository;
 
     private static final String RANGE = "'참고. 리더부여 퀘스트'!A1:Z100";
 
@@ -38,6 +40,10 @@ public class LeaderSyncService {
         List<Map<String, Object>> peopleList = peopleList(data);
         List<Map<String, Object>> questList = questList(data);
         List<Map<String, Object>> questProgressList = questProgressList(data);
+
+        // 유저별 리더 부여 퀘스트에서 MAX에 도달한 횟수를 저장
+        //Map<UserEntity, Integer> maxCountMap = new HashMap<>();
+        Map<UserEntity, Integer> newMaxCountMap = new HashMap<>();
 
         // 퀘스트 동기화 시작
         for (Map<String, Object> person : peopleList) {
@@ -78,64 +84,128 @@ public class LeaderSyncService {
                         .filter(quest -> quest.get("companyNum").equals(companyNum) && quest.get("questName").equals(questName))
                         .toList();
 
-                // 각 달성 정보에 대해 진행 상황 추가 또는 업데이트
+                // 이미 진행된 주(Week) 또는 월(Month) 정보를 조회하여 Set으로 수집
+                Set<Integer> existingWeeksOrMonths = leaderQuestProgressRepository.findByLeaderQuestsAndUsers(leaderQuest, user)
+                        .stream()
+                        .map(progress -> period == Period.WEEKLY ? progress.getWeek() : progress.getMonth()) // 주간이면 주(Week), 월간이면 월(Month)을 가져옴
+                        .collect(Collectors.toSet());
+
+                // 사용자별 업적을 순회하며 진행 상황을 업데이트
                 for (Map<String, Object> achievement : personAchievements) {
-                    int monthOrWeek = (int) achievement.get("monthOrWeek");
-                    String achievementType = achievement.get("achievementType").toString();
+                    int monthOrWeek = (int) achievement.get("monthOrWeek"); // 주 또는 월 정보 추출
+                    String achievementType = achievement.get("achievementType").toString();// 업적 유형(예: "Max")을 문자열로 추출
                     int experience = (int) achievement.get("experience");
 
-                    // 주기별 처리: 주별 또는 월별로 구분하여 진행 상황 업데이트
-                    if (period == Period.WEEKLY) {
-                        addOrUpdateProgress(user, leaderQuest, monthOrWeek, experience, achievementType, true);
-                    } else {
-                        addOrUpdateProgress(user, leaderQuest, monthOrWeek, experience, achievementType, false);
+                    // 업적 유형이 "Max"인지 대소문자를 무시하고 비교하여 확인
+                    boolean isMaxAchieved = "Max".equalsIgnoreCase(achievementType);
+
+                    // 해당 주 또는 월에 진행된 기록이 없는 경우에만 진행 상황 추가 또는 업데이트
+                    if (!existingWeeksOrMonths.contains(monthOrWeek)) {
+                        // 새로운 진행 상황을 추가하거나 기존 진행 상황을 업데이트
+                        addOrUpdateProgress(user, leaderQuest, monthOrWeek, experience, achievementType, period == Period.WEEKLY);
+
+                        // 업적 유형이 "Max"인 경우 새로 달성된 Max 업적 횟수를 증가
+                        if (isMaxAchieved) {
+                            newMaxCountMap.put(user, newMaxCountMap.getOrDefault(user, 0) + 1);
+                        }
                     }
                 }
             }
         }
+        // 업적 유형이 "Max"인 것들로 도전과제 체크 및 업데이트
+        newMaxCountMap.forEach((user, count) -> {
+            if (count > 0) {
+                checkAndUpdateChallenge(user, count);
+            }
+        });
     }
 
     private void addOrUpdateProgress(UserEntity user, LeaderQuestsEntity leaderQuest, int weekOrMonth,
                                      int experience, String achievementType, boolean isWeekly) {
 
-        // 주기별 진행 상황 조회
-        Optional<LeaderQuestProgressEntity> existingProgress = isWeekly
-                ? leaderQuestProgressRepository.findByLeaderQuestsAndUsersAndWeek(leaderQuest, user, weekOrMonth)
-                : leaderQuestProgressRepository.findByLeaderQuestsAndUsersAndMonth(leaderQuest, user, weekOrMonth);
+        // 누적 경험치 계산: 가장 최신 week 또는 month 기준으로 진행 정보 조회
+        int accumulatedExperience = isWeekly
+                ? leaderQuestProgressRepository.findTopByLeaderQuestsAndUsersOrderByWeekDesc(leaderQuest, user)
+                .map(progress -> progress.getAccumulatedExperience() + progress.getExperience())
+                .orElse(0)
+                : leaderQuestProgressRepository.findTopByLeaderQuestsAndUsersOrderByMonthDesc(leaderQuest, user)
+                .map(progress -> progress.getAccumulatedExperience() + progress.getExperience())
+                .orElse(0);
 
-        if (existingProgress.isEmpty()) {
-            // 누적 경험치 계산: 가장 최신 week 또는 month 기준으로 진행 정보 조회
-            int accumulatedExperience = isWeekly
-                    ? leaderQuestProgressRepository.findTopByLeaderQuestsAndUsersOrderByWeekDesc(leaderQuest, user)
-                    .map(progress -> progress.getAccumulatedExperience() + progress.getExperience())
-                    .orElse(0)
-                    : leaderQuestProgressRepository.findTopByLeaderQuestsAndUsersOrderByMonthDesc(leaderQuest, user)
-                    .map(progress -> progress.getAccumulatedExperience() + progress.getExperience())
-                    .orElse(0);
+        // 새로운 LeaderQuestProgressEntity 생성 및 저장
+        LeaderQuestProgressEntity newProgress = new LeaderQuestProgressEntity();
+        newProgress.setLeaderQuests(leaderQuest);
+        newProgress.setUsers(user);
+        newProgress.setAchievement(achievementType);
+        newProgress.setExperience(experience);
+        newProgress.setAccumulatedExperience(accumulatedExperience);
+        newProgress.setCreatedAt(LocalDate.now());
 
-            // 새로운 LeaderQuestProgressEntity 생성 및 저장
-            LeaderQuestProgressEntity newProgress = new LeaderQuestProgressEntity();
-            newProgress.setLeaderQuests(leaderQuest);
-            newProgress.setUsers(user);
-            newProgress.setAchievement(achievementType);
-            newProgress.setExperience(experience);
-            newProgress.setAccumulatedExperience(accumulatedExperience);
-            newProgress.setCreatedAt(LocalDate.now());
-
-            if (isWeekly) {
-                newProgress.setWeek(weekOrMonth);
-                newProgress.setMonth(null);
-            } else {
-                newProgress.setMonth(weekOrMonth);
-                newProgress.setWeek(null);
-            }
-
-            leaderQuestProgressRepository.save(newProgress);
-
-            // 푸시 알림 전송
-            fcmService.sendExperienceNotification(user, experience);
+        if (isWeekly) {
+            newProgress.setWeek(weekOrMonth);
+            newProgress.setMonth(null);
+        } else {
+            newProgress.setMonth(weekOrMonth);
+            newProgress.setWeek(null);
         }
+
+        leaderQuestProgressRepository.save(newProgress);
+
+        // 푸시 알림 전송
+        fcmService.sendExperienceNotification(user, experience);
     }
+
+    private void checkAndUpdateChallenge(UserEntity user, int count) {
+        // 'LEADER_QUEST_MAX' 유형의 도전 과제를 조회
+        // 도전 과제가 없으면 새로 생성 후 저장
+        ChallengesEntity challenge = challengesRepository.findByType(ChallengeType.LEADER_QUEST_MAX)
+                .orElseGet(() -> {
+                    // 새로운 도전 과제 엔티티 생성
+                    ChallengesEntity newChallenge = ChallengesEntity.builder()
+                            .name("리더부여 퀘스트 MAX 기준 10회 달성") // 도전 과제 이름 설정
+                            .description("리더부여 퀘스트에서 MAX 기준을 10회 달성해보세요!") // 도전 과제 설명 설정
+                            .requiredCount(10) // 도전 과제 완료에 필요한 횟수 설정
+                            .type(ChallengeType.LEADER_QUEST_MAX) // 도전 과제 유형 설정
+                            .build();
+                    // 새로 생성한 도전 과제를 저장하고 반환
+                    return challengesRepository.save(newChallenge);
+                });
+
+        // 해당 유저와 도전 과제에 대한 진행 상황을 조회
+        // 진행 상황이 없으면 새로 생성 후 저장
+        ChallengeProgressEntity progress = challengeProgressRepository.findByUsersAndChallenges(user, challenge)
+                .orElseGet(() -> {
+                    // 새로운 도전 과제 진행 상황 엔티티 생성
+                    ChallengeProgressEntity newProgress = new ChallengeProgressEntity();
+                    newProgress.setUsers(user);
+                    newProgress.setChallenges(challenge);
+                    newProgress.setCurrentCount(0);
+                    newProgress.setCompleted(false);
+                    newProgress.setReceive(false);
+                    return challengeProgressRepository.save(newProgress);
+                });
+
+        // 도전 과제가 이미 완료된 경우 메서드를 종료
+        if (progress.getCompleted()) {
+            return;
+        }
+
+        // 현재 진행 횟수에 새로운 횟수를 더함
+        progress.setCurrentCount(progress.getCurrentCount() + count);
+
+        // 누적된 진행 횟수가 도전 과제 완료 기준에 도달했을 때
+        if (progress.getCurrentCount() >= challenge.getRequiredCount()) {
+            progress.setCompleted(true); // 완료 상태로 변경
+
+            // FCM 푸시 알림 전송
+            String title = "도전과제 달성!";
+            String body = "도전과제를 달성하셨습니다! 더 자세한 내용은 홈 탭 > 도전과제에서 확인해보세요.";
+            fcmService.sendPushChallenge(user, title, body);
+        }
+
+        challengeProgressRepository.save(progress);
+    }
+
 
     private int parseInteger(List<Object> row, int index) {
         try {

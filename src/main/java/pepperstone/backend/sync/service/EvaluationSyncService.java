@@ -4,10 +4,15 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import pepperstone.backend.common.entity.ChallengeProgressEntity;
+import pepperstone.backend.common.entity.ChallengesEntity;
 import pepperstone.backend.common.entity.PerformanceEvaluationEntity;
 import pepperstone.backend.common.entity.UserEntity;
+import pepperstone.backend.common.entity.enums.ChallengeType;
 import pepperstone.backend.common.entity.enums.EvaluationPeriod;
 import pepperstone.backend.common.entity.enums.Grade;
+import pepperstone.backend.common.repository.ChallengeProgressRepository;
+import pepperstone.backend.common.repository.ChallengesRepository;
 import pepperstone.backend.common.repository.PerformanceEvaluationRepository;
 import pepperstone.backend.common.repository.UserRepository;
 import pepperstone.backend.notification.service.FcmService;
@@ -26,6 +31,8 @@ public class EvaluationSyncService {
     private final FcmService fcmService;
     private final UserRepository userRepository;
     private final PerformanceEvaluationRepository performanceEvaluationRepository;
+    private final ChallengesRepository challengesRepository;
+    private final ChallengeProgressRepository challengeProgressRepository;
 
     private static final String RANGE = "'참고. 인사평가'!A1:Z100";
 
@@ -70,9 +77,58 @@ public class EvaluationSyncService {
 
             performanceEvaluationRepository.save(evaluation);
 
+            // A 등급 달성 시 도전 과제 체크 및 업데이트
+            if (grade == Grade.A) {
+                checkAndUpdateChallenge(user);
+            }
+
             // 푸시 알림 전송
             fcmService.sendEvaluationNotification(user, evaluationPeriod);
         }
+    }
+
+    private void checkAndUpdateChallenge(UserEntity user) {
+        // 'GRADE_A_ACHIEVEMENT' 유형의 도전 과제를 조회
+        ChallengesEntity challenge = challengesRepository.findByType(ChallengeType.PERFORMANCE_A)
+                .orElseGet(() -> {
+                    // 새로운 도전 과제 엔티티 생성
+                    ChallengesEntity newChallenge = ChallengesEntity.builder()
+                            .name("인사평가 A 등급 달성")
+                            .description("인사평가에서 A 등급을 달성해보세요!")
+                            .requiredCount(1)
+                            .type(ChallengeType.PERFORMANCE_A)
+                            .build();
+                    return challengesRepository.save(newChallenge);
+                });
+
+        // 해당 유저와 도전 과제에 대한 진행 상황을 조회
+        ChallengeProgressEntity progress = challengeProgressRepository.findByUsersAndChallenges(user, challenge)
+                .orElseGet(() -> {
+                    // 새로운 도전 과제 진행 상황 엔티티 생성
+                    ChallengeProgressEntity newProgress = new ChallengeProgressEntity();
+                    newProgress.setUsers(user);
+                    newProgress.setChallenges(challenge);
+                    newProgress.setCurrentCount(0);
+                    newProgress.setCompleted(false);
+                    newProgress.setReceive(false);
+                    return challengeProgressRepository.save(newProgress);
+                });
+
+        // 도전 과제가 이미 완료된 경우 메서드를 종료
+        if (progress.getCompleted()) {
+            return;
+        }
+
+        // 현재 진행 횟수를 1로 설정하고 도전 과제 완료로 표시
+        progress.setCurrentCount(1);
+        progress.setCompleted(true);
+
+        // FCM 푸시 알림 전송
+        String title = "도전과제 달성!";
+        String body = "도전과제를 달성하셨습니다! 더 자세한 내용은 홈 탭 > 도전과제에서 확인해보세요.";
+        fcmService.sendPushChallenge(user, title, body);
+
+        challengeProgressRepository.save(progress);
     }
 
     private List<Map<String, Object>> evaluationList(List<List<Object>> data, EvaluationPeriod period) {
