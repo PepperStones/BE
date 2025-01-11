@@ -37,4 +37,8 @@ public class MemberService {
     public UserEntity getUserInfo(final Long userId) {
         return userRepo.findById(userId).orElse(null);
     }
+
+    public void deleteMember(final Long userId) {
+        userRepo.deleteById(userId);
+    }
 }
