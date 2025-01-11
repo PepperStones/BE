@@ -29,8 +29,4 @@ public class JobGroupEntity {
     // jobGroup : users = 1 : N
     @OneToMany(mappedBy = "jobGroup")
     private List<UserEntity> users = new ArrayList<>();
-
-    // jobGroup : boards = 1 : N
-    @OneToMany(mappedBy = "jobGroup")
-    private List<BoardsEntity> boards = new ArrayList<>();
 }

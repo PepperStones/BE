@@ -1,8 +1,6 @@
 package pepperstone.backend.member.controller;
 
-import io.micrometer.common.util.StringUtils;
 import io.swagger.v3.oas.annotations.Parameter;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springdoc.core.converters.models.PageableAsQueryParam;
@@ -13,8 +11,6 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-import pepperstone.backend.common.entity.CenterGroupEntity;
-import pepperstone.backend.common.entity.JobGroupEntity;
 import pepperstone.backend.common.entity.UserEntity;
 import pepperstone.backend.member.dto.request.MemberAddRequestDTO;
 import pepperstone.backend.member.dto.request.MemberUpdateRequestDTO;
