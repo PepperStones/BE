@@ -42,10 +42,8 @@ public class LeaderSyncService {
         List<Map<String, Object>> questProgressList = questProgressList(data);
 
         // 유저별 리더 부여 퀘스트에서 MAX에 도달한 횟수를 저장
+        //Map<UserEntity, Integer> maxCountMap = new HashMap<>();
         Map<UserEntity, Integer> newMaxCountMap = new HashMap<>();
-
-        // 유저별 부여 경험치 저장
-        Map<UserEntity, Integer> experienceMap = new HashMap<>();
 
         // 퀘스트 동기화 시작
         for (Map<String, Object> person : peopleList) {
@@ -106,8 +104,6 @@ public class LeaderSyncService {
                         // 새로운 진행 상황을 추가하거나 기존 진행 상황을 업데이트
                         addOrUpdateProgress(user, leaderQuest, monthOrWeek, experience, achievementType, period == Period.WEEKLY);
 
-                        experienceMap.put(user, experienceMap.getOrDefault(user, 0) + experience);
-
                         // 업적 유형이 "Max"인 경우 새로 달성된 Max 업적 횟수를 증가
                         if (isMaxAchieved) {
                             newMaxCountMap.put(user, newMaxCountMap.getOrDefault(user, 0) + 1);
@@ -116,17 +112,11 @@ public class LeaderSyncService {
                 }
             }
         }
-
         // 업적 유형이 "Max"인 것들로 도전과제 체크 및 업데이트
         newMaxCountMap.forEach((user, count) -> {
             if (count > 0) {
                 checkAndUpdateChallenge(user, count);
             }
-        });
-
-        // 경험치 푸시 알림 전송
-        experienceMap.forEach((user, experience) -> {
-            fcmService.sendExperienceNotification(user, experience);
         });
     }
 
@@ -160,6 +150,9 @@ public class LeaderSyncService {
         }
 
         leaderQuestProgressRepository.save(newProgress);
+
+        // 푸시 알림 전송
+        fcmService.sendExperienceNotification(user, experience);
     }
 
     private void checkAndUpdateChallenge(UserEntity user, int count) {

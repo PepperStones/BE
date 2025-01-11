@@ -4,8 +4,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import pepperstone.backend.common.entity.ChallengeProgressEntity;
+import pepperstone.backend.common.entity.ChallengesEntity;
 import pepperstone.backend.common.entity.ProjectsEntity;
 import pepperstone.backend.common.entity.UserEntity;
+import pepperstone.backend.common.entity.enums.ChallengeType;
+import pepperstone.backend.common.repository.ChallengeProgressRepository;
+import pepperstone.backend.common.repository.ChallengesRepository;
 import pepperstone.backend.common.repository.ProjectsRepository;
 import pepperstone.backend.common.repository.UserRepository;
 import pepperstone.backend.notification.service.FcmService;
@@ -21,6 +26,8 @@ public class ProjectSyncService {
     private final FcmService fcmService;
     private final UserRepository userRepository;
     private final ProjectsRepository projectsRepository;
+    private final ChallengeProgressRepository challengeProgressRepository;
+    private final ChallengesRepository challengesRepository;
 
     private static final String RANGE = "'참고. 전사 프로젝트'!A1:Z100";
 
@@ -64,8 +71,55 @@ public class ProjectSyncService {
 
             // 푸시 알림 전송
             fcmService.sendExperienceNotification(user, experience);
+
+            // 도전 과제 체크 및 업데이트
+            checkAndUpdateChallenge(user);
         }
 
+    }
+
+    private void checkAndUpdateChallenge(UserEntity user) {
+        // 'PROJECT_PARTICIPATION' 유형의 도전 과제를 조회
+        ChallengesEntity challenge = challengesRepository.findByType(ChallengeType.PROJECT_PARTICIPATION)
+                .orElseGet(() -> {
+                    // 새로운 도전 과제 엔티티 생성
+                    ChallengesEntity newChallenge = ChallengesEntity.builder()
+                            .name("전사프로젝트 1회 참여")
+                            .description("전사프로젝트에 1회 참여해보세요!")
+                            .requiredCount(1)
+                            .type(ChallengeType.PROJECT_PARTICIPATION)
+                            .build();
+                    return challengesRepository.save(newChallenge);
+                });
+
+        // 해당 유저와 도전 과제에 대한 진행 상황을 조회
+        ChallengeProgressEntity progress = challengeProgressRepository.findByUsersAndChallenges(user, challenge)
+                .orElseGet(() -> {
+                    // 새로운 도전 과제 진행 상황 엔티티 생성
+                    ChallengeProgressEntity newProgress = new ChallengeProgressEntity();
+                    newProgress.setUsers(user);
+                    newProgress.setChallenges(challenge);
+                    newProgress.setCurrentCount(0);
+                    newProgress.setCompleted(false);
+                    newProgress.setReceive(false);
+                    return challengeProgressRepository.save(newProgress);
+                });
+
+        // 도전 과제가 이미 완료된 경우 메서드를 종료
+        if (progress.getCompleted()) {
+            return;
+        }
+
+        // 현재 진행 횟수를 1로 설정하고 도전 과제 완료로 표시
+        progress.setCurrentCount(1);
+        progress.setCompleted(true);
+
+        // FCM 푸시 알림 전송
+        String title = "도전 과제 완료!";
+        String body = "전사프로젝트 1회 참여 도전 과제를 완료하셨습니다!";
+        fcmService.sendPushChallenge(user, title, body);
+
+        challengeProgressRepository.save(progress);
     }
 
     private int parseInteger(List<Object> row, int index) {
