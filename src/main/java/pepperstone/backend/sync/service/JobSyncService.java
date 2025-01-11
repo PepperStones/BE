@@ -107,7 +107,7 @@ public class JobSyncService {
             newProgress.setAccumulatedExperience(accumulatedExperience);
             jobQuestProgressRepository.save(newProgress);
 
-            // 경험치 누적
+            // 유저 & 경험치 추가
             experienceMap.put(user, experienceMap.getOrDefault(user, 0) + experience);
 
             // 도전 과제(직무별 퀘스트의 MAX) 달성 체크 로직
@@ -129,7 +129,7 @@ public class JobSyncService {
                     // 도전 과제 초기값 설정
                     ChallengesEntity newChallenge = ChallengesEntity.builder()
                             .name("직무별 퀘스트 MAX 기준 10회 달성")
-                            .description("직무별 퀘스트에서 MAX 기준을 10회 달성하세요!")
+                            .description("직무별 퀘스트에서 MAX 기준을 10회 달성해보세요!")
                             .requiredCount(10)
                             .type(ChallengeType.JOB_QUEST_MAX)
                             .build();
