@@ -19,6 +19,6 @@ public class FcmEntity {
 
     // users : fcm = 1 : N
     @ManyToOne(targetEntity = UserEntity.class)
-    @JoinColumn(name = "fcm_id")
+    @JoinColumn(name = "user_id")
     private UserEntity users;
 }
