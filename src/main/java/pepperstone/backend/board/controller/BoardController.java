@@ -14,6 +14,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import pepperstone.backend.board.dto.request.BoardRequestDTO;
 import pepperstone.backend.board.dto.response.BoardListResponseDTO;
+import pepperstone.backend.board.dto.response.BoardResponseDTO;
 import pepperstone.backend.board.service.BoardService;
 import pepperstone.backend.common.entity.BoardsEntity;
 import pepperstone.backend.common.entity.UserEntity;
@@ -65,7 +66,7 @@ public class BoardController {
         }
     }
 
-    @GetMapping("list")
+    @GetMapping("/admin/list")
     @PageableAsQueryParam
     public ResponseEntity<Map<String, Object>> adminBoardsList(@AuthenticationPrincipal UserEntity userInfo,
                                                                @Parameter(hidden = true)
@@ -92,6 +93,32 @@ public class BoardController {
             return ResponseEntity.badRequest().body(Map.of("code", 400, "data", e.getMessage()));
         } catch (RuntimeException e) {
             return ResponseEntity.status(500).body(Map.of("code", 500, "data", "게시글 불러오기 오류. 잠시 후 다시 시도해주세요."));
+        }
+    }
+
+    @GetMapping("/admin/{boardId}")
+    public ResponseEntity<Map<String, Object>> adminBoardsList(@AuthenticationPrincipal UserEntity userInfo, @PathVariable("boardId") Long boardId) {
+        try {
+            if (!boardService.isAdmin(userInfo.getId()))
+                throw new IllegalArgumentException("어드민이 아닙니다.");
+
+            final BoardsEntity board = boardService.getBoard(boardId);
+
+            final BoardResponseDTO resDTO = BoardResponseDTO.builder()
+                    .id(board.getId())
+                    .centerGroup(board.getCenterGroup())
+                    .jobGroup(board.getJobGroup())
+                    .title(board.getTitle())
+                    .createdAt(board.getCreatedAt())
+                    .updatedAt(board.getUpdatedAt())
+                    .content(board.getContent())
+                    .build();
+
+            return ResponseEntity.ok().body(Map.of("code", 200, "data", resDTO));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("code", 400, "data", e.getMessage()));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(500).body(Map.of("code", 500, "data", "게시글 세부 내용 불러오기 오류. 잠시 후 다시 시도해주세요."));
         }
     }
 }

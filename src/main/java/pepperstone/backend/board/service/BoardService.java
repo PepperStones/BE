@@ -40,4 +40,13 @@ public class BoardService {
     public Slice<BoardsEntity> getAllBoards(final Pageable pageable) {
         return boardsRepo.findAll(pageable);
     }
+
+    public BoardsEntity getBoard(final Long boardId) {
+        final BoardsEntity board = boardsRepo.findById(boardId).orElse(null);
+
+        if (board == null)
+            throw new IllegalArgumentException("게시글이 존재하지 않습니다.");
+
+        return board;
+    }
 }
