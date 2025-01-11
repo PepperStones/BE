@@ -1,8 +1,6 @@
 package pepperstone.backend.member.controller;
 
-import io.micrometer.common.util.StringUtils;
 import io.swagger.v3.oas.annotations.Parameter;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springdoc.core.converters.models.PageableAsQueryParam;
@@ -13,8 +11,6 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-import pepperstone.backend.common.entity.CenterGroupEntity;
-import pepperstone.backend.common.entity.JobGroupEntity;
 import pepperstone.backend.common.entity.UserEntity;
 import pepperstone.backend.member.dto.request.MemberAddRequestDTO;
 import pepperstone.backend.member.dto.request.MemberUpdateRequestDTO;
@@ -64,7 +60,7 @@ public class MemberController {
     }
 
     @GetMapping("/{userId}")
-    public ResponseEntity<Map<String, Object>> getMemberInfo(@PathVariable Long userId) {
+    public ResponseEntity<Map<String, Object>> getMemberInfo(@PathVariable("userId") Long userId) {
         try {
             final UserEntity user = memberService.getUserInfo(userId);
 
@@ -93,7 +89,7 @@ public class MemberController {
     }
 
     @DeleteMapping("/{userId}")
-    public ResponseEntity<Map<String, Object>> deleteMember(@PathVariable Long userId) {
+    public ResponseEntity<Map<String, Object>> deleteMember(@PathVariable("userId") Long userId) {
         try {
             final UserEntity user = memberService.getUserInfo(userId);
 
@@ -111,7 +107,7 @@ public class MemberController {
     }
 
     @PatchMapping("/{userId}")
-    public ResponseEntity<Map<String, Object>> updateMember(@PathVariable Long userId, @RequestBody MemberUpdateRequestDTO dto) {
+    public ResponseEntity<Map<String, Object>> updateMember(@PathVariable("userId") Long userId, @RequestBody MemberUpdateRequestDTO dto) {
         try {
             final UserEntity user = memberService.getUserInfo(userId);
 

@@ -23,8 +23,4 @@ public class CenterGroupEntity {
     // centerGroup : jobGroup = 1 : N
     @OneToMany(mappedBy = "centerGroup")
     private List<JobGroupEntity> jobGroups = new ArrayList<>();
-
-    // centerGroup : boards = 1 : N
-    @OneToMany(mappedBy = "centerGroup")
-    private List<BoardsEntity> boards = new ArrayList<>();
 }
