@@ -39,21 +39,26 @@ public class UserEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
+    @Builder.Default
     private UserRole role = UserRole.USER; // Default 값: USER
 
     @Column(nullable = false)
-    private Integer accumulatedExperience; // 올해 제외 누적 경험치
+    @Builder.Default
+    private Integer accumulatedExperience = 0; // 올해 제외 누적 경험치
 
     @Column(nullable = false)
     private String level; // 레벨
 
     @Enumerated(EnumType.STRING)
+    @Builder.Default
     private Skin skin = Skin.S0; // Default 값: S0
 
     @Enumerated(EnumType.STRING)
+    @Builder.Default
     private Decoration decoration = Decoration.D0; // Default 값: D0
 
     @Enumerated(EnumType.STRING)
+    @Builder.Default
     private Effect effect = Effect.E0; // Default 값: E0
 
     // jobGroup : users = 1 : N

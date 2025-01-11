@@ -86,7 +86,7 @@ public class MypageController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("code", 400, "data", e.getMessage()));
         } catch (RuntimeException e) {
-            return ResponseEntity.status(500).body(Map.of("code", 500, "data", "나의 정보 불러오기 오류. 잠시 후 다시 시도해주세요."));
+            return ResponseEntity.status(500).body(Map.of("code", 500, "data", "나의 정보 수정하기 오류. 잠시 후 다시 시도해주세요."));
         }
     }
 
@@ -108,7 +108,7 @@ public class MypageController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("code", 400, "data", e.getMessage()));
         } catch (RuntimeException e) {
-            return ResponseEntity.status(500).body(Map.of("code", 500, "data", "나의 정보 불러오기 오류. 잠시 후 다시 시도해주세요."));
+            return ResponseEntity.status(500).body(Map.of("code", 500, "data", "별 데이터 불러오기 오류. 잠시 후 다시 시도해주세요."));
         }
     }
 
@@ -147,7 +147,7 @@ public class MypageController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("code", 400, "data", e.getMessage()));
         } catch (RuntimeException e) {
-            return ResponseEntity.status(500).body(Map.of("code", 500, "data", "로그인 오류. 잠시 후 다시 시도해주세요."));
+            return ResponseEntity.status(500).body(Map.of("code", 500, "data", "별 수정하기 오류. 잠시 후 다시 시도해주세요."));
         }
     }
 }
