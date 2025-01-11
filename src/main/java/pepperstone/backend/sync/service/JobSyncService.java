@@ -159,7 +159,7 @@ public class JobSyncService {
             progress.setCompleted(true);
 
             // 푸시 알림 전송
-            String title = "도전 과제 완료!";
+            String title = "도전과제 달성!";
             String body = "도전과제를 달성하셨습니다! 더 자세한 내용은 홈 탭 > 도전과제에서 확인해보세요.";
             fcmService.sendPushChallenge(user, title, body);
         }

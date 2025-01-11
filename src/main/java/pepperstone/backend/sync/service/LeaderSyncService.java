@@ -198,8 +198,8 @@ public class LeaderSyncService {
             progress.setCompleted(true); // 완료 상태로 변경
 
             // FCM 푸시 알림 전송
-            String title = "도전 과제 완료!";
-            String body = "리더부여 퀘스트 MAX 기준 10회 달성 도전 과제를 완료하셨습니다!";
+            String title = "도전과제 달성!";
+            String body = "도전과제를 달성하셨습니다! 더 자세한 내용은 홈 탭 > 도전과제에서 확인해보세요.";
             fcmService.sendPushChallenge(user, title, body);
         }
 
