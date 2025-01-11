@@ -40,6 +40,7 @@ public class UserController {
             final String refreshToken = tokenProvider.createRefreshToken(user);
 
             final TokenResponseDTO resDTO = TokenResponseDTO.builder()
+                    .userRole(user.getRole().name())
                     .accessToken(accessToken)
                     .refreshToken(refreshToken)
                     .build();

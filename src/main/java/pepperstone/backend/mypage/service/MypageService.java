@@ -30,11 +30,14 @@ public class MypageService {
     public PerformanceEvaluationEntity getPerformanceEvaluation(final Long userId) {
         final List<PerformanceEvaluationEntity> evaluations = performanceEvaluationRepo.findAllByUsersId(userId);
 
-        LocalDate currentDate = LocalDate.now();
-        EvaluationPeriod targetPeriod = currentDate.getMonthValue() < 7 ? EvaluationPeriod.H2 : EvaluationPeriod.H1;
+        final LocalDate currentDate = LocalDate.now();
+        final int month = currentDate.getMonthValue();
+
+        final EvaluationPeriod targetPeriod = month < 7 ? EvaluationPeriod.H2 : EvaluationPeriod.H1;
+        final int targetYear = month < 7 ? currentDate.getYear() - 1 : currentDate.getYear();
 
         return evaluations.stream()
-                .filter(eval -> eval.getEvaluationPeriod().equals(targetPeriod))
+                .filter(eval -> eval.getEvaluationPeriod().equals(targetPeriod) && eval.getCreatedAt().getYear() == targetYear)
                 .findFirst()
                 .orElse(null);
     }
@@ -69,6 +72,8 @@ public class MypageService {
         if (!unlockStatusRepo.existsByUsersIdAndItemTypeAndItemValue(userId, type, value))
             throw new IllegalArgumentException("잠금 해제되지 않은 아이템입니다.");
     }
+
+    // ============== private method ================
 
     private boolean isDefaultItem(ItemType type, String value) {
         return switch (type) {
