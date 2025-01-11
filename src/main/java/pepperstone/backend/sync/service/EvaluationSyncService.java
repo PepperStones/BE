@@ -1,6 +1,7 @@
 package pepperstone.backend.sync.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pepperstone.backend.common.entity.PerformanceEvaluationEntity;
@@ -9,6 +10,7 @@ import pepperstone.backend.common.entity.enums.EvaluationPeriod;
 import pepperstone.backend.common.entity.enums.Grade;
 import pepperstone.backend.common.repository.PerformanceEvaluationRepository;
 import pepperstone.backend.common.repository.UserRepository;
+import pepperstone.backend.notification.service.FcmService;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -16,10 +18,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class EvaluationSyncService {
     private final SyncService syncService;
+    private final FcmService fcmService;
     private final UserRepository userRepository;
     private final PerformanceEvaluationRepository performanceEvaluationRepository;
 
@@ -65,6 +69,9 @@ public class EvaluationSyncService {
             evaluation.setCreatedAt(LocalDate.now());
 
             performanceEvaluationRepository.save(evaluation);
+
+            // 푸시 알림 전송
+            fcmService.sendEvaluationNotification(user, evaluationPeriod);
         }
     }
 

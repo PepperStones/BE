@@ -13,6 +13,7 @@ import org.springframework.web.client.RestTemplate;
 import pepperstone.backend.common.entity.FcmEntity;
 import pepperstone.backend.common.entity.PushEntity;
 import pepperstone.backend.common.entity.UserEntity;
+import pepperstone.backend.common.entity.enums.EvaluationPeriod;
 import pepperstone.backend.common.repository.FcmRepository;
 import pepperstone.backend.common.repository.PushRepository;
 import pepperstone.backend.notification.dto.FcmMessageDto;
@@ -65,8 +66,9 @@ public class FcmServiceImpl implements FcmService {
     }
 
     // 부여된 경험치를 인자로 받아 해당 유저가 가진 모든 FCM 토큰에 푸시 알림을 전송하는 메서드
+    // 직무별 퀘스트 / 리더부여 / 전사 프로젝트
     @Override
-    public int sendExperienceNotification(UserEntity user, int experience) {
+    public void sendExperienceNotification(UserEntity user, int experience) {
         List<String> fcmTokens = fcmRepository.findByUsers(user)
                 .stream()
                 .map(FcmEntity::getToken)
@@ -96,7 +98,53 @@ public class FcmServiceImpl implements FcmService {
         pushRepository.save(push);
         log.info("푸시 알림 정보 저장 완료: 사용자 ID={}, 제목={}", user.getId(), push.getTitle());
 
-        return successCount == fcmTokens.size() ? 1 : 0; // 모든 알림이 성공적으로 전송된 경우에만 1 반환
+        if (successCount == fcmTokens.size()) {
+            log.info("푸시 알림 전송 성공: 사용자 ID={}, 경험치={}do", user.getId(), experience);
+        } else {
+            log.error("푸시 알림 전송 실패: 사용자 ID={}, 경험치={}do", user.getId(), experience);
+        }
+    }
+
+    // 인사평가 경험치 알림 전송 메서드
+    @Override
+    public void sendEvaluationNotification(UserEntity user, EvaluationPeriod period) {
+        List<String> fcmTokens = fcmRepository.findByUsers(user)
+                .stream()
+                .map(FcmEntity::getToken)
+                .toList();
+
+        // 알림 제목과 내용 설정
+        String title = (period == EvaluationPeriod.H1) ? "상반기 인사평가 완료!" : "하반기 인사평가 완료!";
+        String body = (period == EvaluationPeriod.H1)
+                ? "상반기 인사평가가 등록되었습니다. 자세한 내용은 홈 탭 > 최근 획득 경험치에서 확인해보세요."
+                : "하반기 인사평가가 등록되었습니다. 자세한 내용은 홈 탭 > 최근 획득 경험치에서 확인해보세요.";
+
+        int successCount = 0;
+        for (String token : fcmTokens) {
+            try {
+                sendPushNotification(title, body, token);
+                successCount++;
+            } catch (Exception e) {
+                log.error("Error sending experience granted notification to user {}: {}", user.getId(), e.getMessage());
+            }
+        }
+
+        // 푸시 알림 정보를 PushEntity로 저장
+        PushEntity push = new PushEntity();
+        push.setUsers(user);
+        push.setTitle(title);
+        push.setContent(body);
+        push.setCreatedAt(LocalDate.now());
+        push.setOpen(false); // 기본값 false로 설정
+
+        pushRepository.save(push);
+        log.info("푸시 알림 정보 저장 완료: 사용자 ID={}, 제목={}", user.getId(), push.getTitle());
+
+        if (successCount == fcmTokens.size()) {
+            log.info("푸시 알림 전송 성공: 사용자 ID={}, 제목={}", user.getId(), push.getTitle());
+        } else {
+            log.error("푸시 알림 전송 실패: 사용자 ID={}, 제목={}", user.getId(), push.getTitle());
+        }
     }
 
     // FCM 메시지를 실제로 전송하는 메서드

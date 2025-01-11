@@ -133,12 +133,7 @@ public class LeaderSyncService {
             leaderQuestProgressRepository.save(newProgress);
 
             // 푸시 알림 전송
-            int result = fcmService.sendExperienceNotification(user, experience);
-            if (result == 1) {
-                log.info("리더 퀘스트 푸시 알림 전송 성공: 사용자 ID={}, 경험치={}do", user.getId(), experience);
-            } else {
-                log.error("리더 퀘스트 푸시 알림 전송 실패: 사용자 ID={}, 경험치={}do", user.getId(), experience);
-            }
+            fcmService.sendExperienceNotification(user, experience);
         }
     }
 
