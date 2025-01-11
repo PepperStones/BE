@@ -2,10 +2,7 @@ package pepperstone.backend.common.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import pepperstone.backend.common.entity.enums.Skin;
-import pepperstone.backend.common.entity.enums.Decoration;
-import pepperstone.backend.common.entity.enums.Effect;
-import pepperstone.backend.common.entity.enums.UserRole;
+import pepperstone.backend.common.entity.enums.*;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -30,6 +27,9 @@ public class UserEntity {
 
     @Column(nullable = false)
     private String password; // 비밀번호
+
+    @Column(nullable = false)
+    private String initPassword; // 기본 비밀번호
 
     @Column(nullable = false)
     private String name; // 이름
@@ -100,4 +100,8 @@ public class UserEntity {
     // users : boardTracking = 1 : N
     @OneToMany(mappedBy = "users")
     private List<BoardTrackingEntity> boardTracking = new ArrayList<>();
+
+    // users : unlockStatus = 1 : N
+    @OneToMany(mappedBy = "users")
+    private List<UnlockStatusEntity> unlockStatus = new ArrayList<>();
 }

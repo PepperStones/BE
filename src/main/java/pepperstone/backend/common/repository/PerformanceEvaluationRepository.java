@@ -13,4 +13,5 @@ import java.util.List;
 public interface PerformanceEvaluationRepository extends JpaRepository<PerformanceEvaluationEntity, Long> {
     // 특정 유저, 평가 기간, 연도에 해당하는 인사평가 데이터를 삭제하는 메서드
     void deleteByUsersAndEvaluationPeriodAndCreatedAtBetween(UserEntity users, EvaluationPeriod evaluationPeriod, LocalDate startDate, LocalDate endDate);
+    List<PerformanceEvaluationEntity> findAllByUsersId(Long userId);
 }
