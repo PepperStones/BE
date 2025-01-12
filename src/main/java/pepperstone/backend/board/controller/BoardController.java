@@ -21,6 +21,7 @@ import pepperstone.backend.common.entity.BoardsEntity;
 import pepperstone.backend.common.entity.UserEntity;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -98,7 +99,7 @@ public class BoardController {
     }
 
     @GetMapping("/admin/{boardId}")
-    public ResponseEntity<Map<String, Object>> adminBoardsList(@AuthenticationPrincipal UserEntity userInfo, @PathVariable("boardId") Long boardId) {
+    public ResponseEntity<Map<String, Object>> getAdminBoard(@AuthenticationPrincipal UserEntity userInfo, @PathVariable("boardId") Long boardId) {
         try {
             if (!boardService.isAdmin(userInfo.getId()))
                 throw new IllegalArgumentException("어드민이 아닙니다.");
@@ -170,6 +171,69 @@ public class BoardController {
             return ResponseEntity.badRequest().body(Map.of("code", 400, "data", e.getMessage()));
         } catch (RuntimeException e) {
             return ResponseEntity.status(500).body(Map.of("code", 500, "data", "게시글 수정하기 오류. 잠시 후 다시 시도해주세요."));
+        }
+    }
+
+    @GetMapping("/list")
+    @PageableAsQueryParam
+    public ResponseEntity<Map<String, Object>> boardsList(@AuthenticationPrincipal UserEntity userInfo,
+                                                          @Parameter(hidden = true)
+                                                          @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        try {
+            final UserEntity user = boardService.getUserInfo(userInfo.getId());
+
+            if (user == null)
+                throw new IllegalArgumentException("유저 정보가 없습니다.");
+
+            Slice<BoardsEntity> boards = boardService
+                    .getFilterBoards(user.getJobGroup().getCenterGroup().getCenterName(),
+                    user.getJobGroup().getJobName(),
+                    pageable);
+
+            List<BoardListResponseDTO> resDTO = boards.stream()
+                    .map(board -> BoardListResponseDTO.builder()
+                            .id(board.getId())
+                            .centerGroup(board.getCenterGroup())
+                            .jobGroup(board.getJobGroup())
+                            .title(board.getTitle())
+                            .createdAt(board.getCreatedAt())
+                            .updatedAt(board.getUpdatedAt())
+                            .build())
+                    .toList();
+
+            return ResponseEntity.ok().body(Map.of("code", 200, "data", resDTO));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("code", 400, "data", e.getMessage()));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(500).body(Map.of("code", 500, "data", "게시글 불러오기 오류. 잠시 후 다시 시도해주세요."));
+        }
+    }
+
+    @GetMapping("/{boardId}")
+    public ResponseEntity<Map<String, Object>> getBoard(@AuthenticationPrincipal UserEntity userInfo, @PathVariable("boardId") Long boardId) {
+        try {
+            final UserEntity user = boardService.getUserInfo(userInfo.getId());
+
+            if (user == null)
+                throw new IllegalArgumentException("유저 정보가 없습니다.");
+
+            final BoardsEntity board = boardService.getBoardUser(boardId, user);
+
+            final BoardResponseDTO resDTO = BoardResponseDTO.builder()
+                    .id(board.getId())
+                    .centerGroup(board.getCenterGroup())
+                    .jobGroup(board.getJobGroup())
+                    .title(board.getTitle())
+                    .createdAt(board.getCreatedAt())
+                    .updatedAt(board.getUpdatedAt())
+                    .content(board.getContent())
+                    .build();
+
+            return ResponseEntity.ok().body(Map.of("code", 200, "data", resDTO));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("code", 400, "data", e.getMessage()));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(500).body(Map.of("code", 500, "data", "게시글 불러오기 오류. 잠시 후 다시 시도해주세요."));
         }
     }
 }

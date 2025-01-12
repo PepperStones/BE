@@ -2,6 +2,7 @@ package pepperstone.backend.board.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
@@ -57,5 +58,28 @@ public class BoardService {
             throw new IllegalArgumentException("게시글이 존재하지 않습니다.");
 
         boardsRepo.delete(board);
+    }
+
+    public UserEntity getUserInfo(final Long userId) {
+        return userRepo.findById(userId).orElse(null);
+    }
+
+    public Slice<BoardsEntity> getFilterBoards(final String centerGroup, final String jobGroup, final Pageable pageable) {
+        return boardsRepo.findAllWithFilters(centerGroup, jobGroup, pageable);
+    }
+
+    public BoardsEntity getBoardUser(final Long boardId, final UserEntity userInfo) {
+        final BoardsEntity board = boardsRepo.findById(boardId).orElse(null);
+
+        if (board == null)
+            throw new IllegalArgumentException("게시글이 존재하지 않습니다.");
+
+        if (board.getCenterGroup() != null && !board.getCenterGroup().equals(userInfo.getJobGroup().getCenterGroup().getCenterName()))
+            throw new IllegalArgumentException("권한이 없는 게시글입니다.");
+
+        if (board.getJobGroup() != null && !board.getJobGroup().equals(userInfo.getJobGroup().getJobName()))
+            throw new IllegalArgumentException("권한이 없는 게시글입니다.");
+
+        return board;
     }
 }
