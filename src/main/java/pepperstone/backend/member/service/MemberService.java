@@ -9,13 +9,20 @@ import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import pepperstone.backend.common.entity.CenterGroupEntity;
 import pepperstone.backend.common.entity.JobGroupEntity;
+import pepperstone.backend.common.entity.UnlockStatusEntity;
 import pepperstone.backend.common.entity.UserEntity;
+import pepperstone.backend.common.entity.enums.ItemType;
 import pepperstone.backend.common.entity.enums.UserRole;
 import pepperstone.backend.common.repository.CenterGroupRepository;
 import pepperstone.backend.common.repository.JobGroupReository;
+import pepperstone.backend.common.repository.UnlockStatusRepository;
 import pepperstone.backend.common.repository.UserRepository;
 import pepperstone.backend.member.dto.request.MemberAddRequestDTO;
 import pepperstone.backend.member.dto.request.MemberUpdateRequestDTO;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -24,6 +31,7 @@ public class MemberService {
     private final UserRepository userRepo;
     private final CenterGroupRepository centerGroupRepo;
     private final JobGroupReository jobGroupRepo;
+    private final UnlockStatusRepository unlockStatusRepo;
 
     public Boolean isAdmin(final Long userId) {
         final UserEntity user = userRepo.findById(userId).orElse(null);
@@ -94,6 +102,22 @@ public class MemberService {
                     .role(UserRole.USER)
                     .build();
 
+            final Map<ItemType, String> itemMap = Map.of(
+                    ItemType.SKIN, "S",
+                    ItemType.DECORATION, "D",
+                    ItemType.EFFECT, "E"
+            );
+
+            for (Map.Entry<ItemType, String> entry : itemMap.entrySet()) {
+                final UnlockStatusEntity unlockStatus = UnlockStatusEntity.builder()
+                        .itemType(entry.getKey())
+                        .itemValue(entry.getValue() + "0")
+                        .users(user)
+                        .build();
+
+                unlockStatusRepo.save(unlockStatus);
+            }
+
             addMember(user);
         } catch (Exception e) {
             throw new IllegalArgumentException("구성원 추가 오류. 잠시 후 다시 시도해주세요.");
@@ -122,5 +146,9 @@ public class MemberService {
 
     private void addMember(final UserEntity user) {
         userRepo.save(user);
+    }
+
+    private void addUnlockItem(final UnlockStatusEntity unlockStatus) {
+        unlockStatusRepo.save(unlockStatus);
     }
 }
