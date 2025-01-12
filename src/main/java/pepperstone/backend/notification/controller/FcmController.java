@@ -42,8 +42,7 @@ public class FcmController {
     @GetMapping("/list")
     public ResponseEntity<Map<String, Object>> getNotificationList(@AuthenticationPrincipal UserEntity userInfo) {
         try {
-            List<NotificationDto> notifications = fcmService.getNotificationList(userInfo);
-            return ResponseEntity.ok(Map.of("code", 200, "data", notifications));
+            return ResponseEntity.ok(Map.of("code", 200, "data", fcmService.getNotificationList(userInfo)));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(401).body(Map.of("code", 401, "message", "Unauthorized: 인증에 실패했습니다."));
         } catch (RuntimeException e) {
@@ -52,5 +51,17 @@ public class FcmController {
         }
     }
 
-
+    @PatchMapping("/open")
+    public ResponseEntity<Map<String, Object>> openNotification(@AuthenticationPrincipal UserEntity userInfo,
+                                                                @RequestParam Long pushId) {
+        try {
+            return ResponseEntity.ok(Map.of("code", 200, "data", fcmService.openNotification(userInfo, pushId)));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("code", 400, "message", e.getMessage()));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(404).body(Map.of("code", 404, "message", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of("code", 500, "message", "Internal server error. Please try again later."));
+        }
+    }
 }
