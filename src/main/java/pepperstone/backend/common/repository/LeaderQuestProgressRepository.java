@@ -6,6 +6,7 @@ import pepperstone.backend.common.entity.LeaderQuestProgressEntity;
 import pepperstone.backend.common.entity.LeaderQuestsEntity;
 import pepperstone.backend.common.entity.UserEntity;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -14,4 +15,5 @@ public interface LeaderQuestProgressRepository extends JpaRepository<LeaderQuest
     Optional<LeaderQuestProgressEntity> findTopByLeaderQuestsAndUsersOrderByWeekDesc(LeaderQuestsEntity leaderQuest, UserEntity user);
     Optional<LeaderQuestProgressEntity> findTopByLeaderQuestsAndUsersOrderByMonthDesc(LeaderQuestsEntity leaderQuest, UserEntity user);
     List<LeaderQuestProgressEntity> findByLeaderQuestsAndUsers(LeaderQuestsEntity leaderQuest, UserEntity user);
+    List<LeaderQuestProgressEntity> findByUsersAndCreatedAtBetween(UserEntity user, LocalDate startDate, LocalDate endDate);
 }

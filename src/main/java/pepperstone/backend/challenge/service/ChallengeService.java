@@ -65,6 +65,8 @@ public class ChallengeService {
                 .collect(Collectors.toList());
     }
 
+    // ============== private method ================
+
     // 도전 과제를 조회하고 없으면 생성, 진행 상황을 조회하고 없으면 초기값으로 생성하는 메서드
     private void getOrCreateChallengeProgress(UserEntity user, ChallengeType type) {
         // 도전 과제 조회 또는 생성
