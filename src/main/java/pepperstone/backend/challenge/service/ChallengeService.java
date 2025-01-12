@@ -2,7 +2,9 @@ package pepperstone.backend.challenge.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import pepperstone.backend.challenge.dto.response.ChallengeProgressResponseDTO;
+import pepperstone.backend.challenge.dto.response.ChallengeReceiveResponseDTO;
 import pepperstone.backend.challenge.dto.response.ChallengeResponseDTO;
 import pepperstone.backend.common.entity.ChallengeProgressEntity;
 import pepperstone.backend.common.entity.ChallengesEntity;
@@ -12,6 +14,7 @@ import pepperstone.backend.common.repository.ChallengeProgressRepository;
 import pepperstone.backend.common.repository.ChallengesRepository;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -20,6 +23,28 @@ public class ChallengeService {
 
     private final ChallengeProgressRepository challengeProgressRepository;
     private final ChallengesRepository challengesRepository;
+
+    @Transactional
+    public ChallengeReceiveResponseDTO receiveReward(UserEntity user, Long challengeProgressId) {
+        // 도전 과제 진행 상황 조회
+        ChallengeProgressEntity progress = challengeProgressRepository.findByIdAndUsers(challengeProgressId, user)
+                .orElseThrow(() -> new IllegalArgumentException("Challenge progress not found."));
+
+        // 이미 수령 완료된 경우 예외 발생
+        if (progress.getReceive()) {
+            throw new IllegalArgumentException("Challenge reward has already been received.");
+        }
+
+        // 수령 여부 업데이트
+        progress.setReceive(true);
+        challengeProgressRepository.save(progress);
+
+        // DTO에 응답 데이터 세팅 후 반환
+        return ChallengeReceiveResponseDTO.builder()
+                .challengeProgressId(progress.getId())
+                .receive(progress.getReceive())
+                .build();
+    }
 
     public List<ChallengeResponseDTO> getChallengeList(UserEntity user) {
         // 모든 도전 과제 유형에 대해 진행 상황을 조회하고 없으면 초기값으로 생성

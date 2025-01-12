@@ -13,4 +13,5 @@ import java.util.Optional;
 public interface ChallengeProgressRepository extends JpaRepository<ChallengeProgressEntity, Long> {
     List<ChallengeProgressEntity> findByUsers(UserEntity user);
     Optional<ChallengeProgressEntity> findByUsersAndChallenges(UserEntity user, ChallengesEntity challenge);
+    Optional<ChallengeProgressEntity> findByIdAndUsers(Long id, UserEntity users);
 }
