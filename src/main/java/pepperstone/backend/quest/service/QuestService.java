@@ -32,8 +32,7 @@ public class QuestService {
                 .map(quest -> QuestProgressResponseDTO.jobQuests.builder()
                         .id(quest.getId())
                         .period(quest.getJobQuest().getPeriod())
-                        .accumulatedExperience(quest.getAccumulatedExperience())
-                        .maxScore(quest.getJobQuest().getMaxScore())
+                        .accumulatedExperience(quest.getAccumulatedExperience() + quest.getExperience())
                         .maxStandard(quest.getJobQuest().getMaxStandard())
                         .mediumStandard(quest.getJobQuest().getMediumStandard())
                         .build())
@@ -41,6 +40,18 @@ public class QuestService {
     }
 
     public List<QuestProgressResponseDTO.leaderQuests> getLeaderQuests(final UserEntity user) {
-        final List<LeaderQuestProgressEntity> quests = leaderQuestProgressRepo.findByUsers()
+        final List<LeaderQuestProgressEntity> quests = leaderQuestProgressRepo.findByUsers(user);
+
+        return quests.stream()
+                .map(quest -> QuestProgressResponseDTO.leaderQuests.builder()
+                        .id(quest.getId())
+                        .period(quest.getLeaderQuests().getPeriod())
+                        .accumulatedExperience(quest.getAccumulatedExperience() + quest.getExperience())
+                        .questName(quest.getLeaderQuests().getQuestName())
+                        .maxCondition(quest.getLeaderQuests().getMaxCondition())
+                        .medianCondition(quest.getLeaderQuests().getMedianCondition())
+                        .weight(quest.getLeaderQuests().getWeight())
+                        .build())
+                .toList();
     }
 }

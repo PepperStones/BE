@@ -23,7 +23,6 @@ public class QuestProgressResponseDTO {
         private Long id;
         private Period period;
         private Integer accumulatedExperience;
-        private Integer maxScore;
         private Double maxStandard;
         private Double mediumStandard;
     }
@@ -38,8 +37,6 @@ public class QuestProgressResponseDTO {
         private String questName;
         private String maxCondition;
         private String medianCondition;
-        private Integer maxPoints;
-        private Integer medianPoints;
         private Integer weight;
     }
 }

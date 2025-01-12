@@ -30,7 +30,12 @@ public class QuestController {
                 throw new IllegalArgumentException("나의 정보가 없습니다.");
 
             final List<QuestProgressResponseDTO.jobQuests> jobQuests = questService.getJobQuests(user);
-            final List<QuestProgressResponseDTO.leaderQuests> leaderQuests =
+            final List<QuestProgressResponseDTO.leaderQuests> leaderQuests = questService.getLeaderQuests(user);
+
+            final QuestProgressResponseDTO resDTO = QuestProgressResponseDTO.builder()
+                    .jobQuests(jobQuests)
+                    .leaderQuests(leaderQuests)
+                    .build();
 
             return ResponseEntity.ok().body(Map.of("code", 200, "data", resDTO));
         } catch (IllegalArgumentException e) {

@@ -98,7 +98,7 @@ public class MemberController {
 
             memberService.deleteMember(userId);
 
-            return ResponseEntity.ok().body(Map.of("code", 200, "data", true));
+            return ResponseEntity.ok().body(Map.of("code", 200, "data" , true));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("code", 400, "data", e.getMessage()));
         } catch (RuntimeException e) {
