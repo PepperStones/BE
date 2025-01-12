@@ -153,8 +153,17 @@ public class BoardController {
 
             final BoardsEntity board = boardService.getBoard(boardId);
 
-            board.setCenterGroup(dto.getCenterGroup());
-            board.setJobGroup(dto.getJobGroup());
+            if (dto.getCenterGroup().equals("전체")) {
+                board.setCenterGroup(null);
+            } else {
+                board.setCenterGroup(dto.getCenterGroup());
+            }
+
+            if (dto.getJobGroup().equals("전체")) {
+                board.setJobGroup(null);
+            } else {
+                board.setJobGroup(dto.getJobGroup());
+            }
 
             if (StringUtils.isNotBlank(dto.getTitle()))
                 board.setTitle(dto.getTitle());
