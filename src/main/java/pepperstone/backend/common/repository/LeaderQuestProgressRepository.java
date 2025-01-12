@@ -16,4 +16,5 @@ public interface LeaderQuestProgressRepository extends JpaRepository<LeaderQuest
     Optional<LeaderQuestProgressEntity> findTopByLeaderQuestsAndUsersOrderByMonthDesc(LeaderQuestsEntity leaderQuest, UserEntity user);
     List<LeaderQuestProgressEntity> findByLeaderQuestsAndUsers(LeaderQuestsEntity leaderQuest, UserEntity user);
     List<LeaderQuestProgressEntity> findByUsersAndCreatedAtBetween(UserEntity user, LocalDate startDate, LocalDate endDate);
+    List<LeaderQuestProgressEntity> findByUsers(UserEntity user);
 }

@@ -12,4 +12,5 @@ import java.util.List;
 public interface ProjectsRepository extends JpaRepository<ProjectsEntity, Long> {
     boolean existsByUsersAndProjectName(UserEntity users, String projectName);
     List<ProjectsEntity> findByUsersAndCreatedAtBetween(UserEntity user, LocalDate startDate, LocalDate endDate);
+    List<ProjectsEntity> findByUsers(UserEntity user);
 }

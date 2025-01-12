@@ -10,6 +10,7 @@ import pepperstone.backend.common.repository.LeaderQuestProgressRepository;
 import pepperstone.backend.common.repository.PerformanceEvaluationRepository;
 import pepperstone.backend.common.repository.ProjectsRepository;
 import pepperstone.backend.experience.dto.response.ExperienceDto;
+import pepperstone.backend.experience.dto.response.RecentExperienceDto;
 
 import java.time.LocalDate;
 import java.util.Comparator;
@@ -27,6 +28,12 @@ public class ExperienceService {
     private final ProjectsRepository projectsRepository;
     private final PerformanceEvaluationRepository performanceEvaluationRepository;
 
+    /**
+     * 현재 경험치 현황 정보 조회 메서드
+     *
+     * @param user
+     * @return 사용자 정보, 경험치 정보 반환
+     */
     @Transactional
     public ExperienceDto getCurrentExperience(UserEntity user) {
         if (user == null) {
@@ -105,5 +112,57 @@ public class ExperienceService {
                 .stream()
                 .mapToInt(PerformanceEvaluationEntity::getExperience)
                 .sum();
+    }
+
+    /**
+     * 수령 경험치 목룍 조회 메서드
+     *
+     * @param user
+     * @return 인사평가, 직무별 퀘스트, 리더 부여 퀘스트, 전사 퀘스트에서 얻은 경험치 중 최신순으로 모든 경험치, 날짜, 퀘스트명 반환
+     */
+    @Transactional
+    public RecentExperienceDto getRecentExperience(UserEntity user) {
+        if (user == null) {
+            throw new IllegalArgumentException("유효하지 않은 사용자입니다.");
+        }
+
+        return RecentExperienceDto.builder()
+                .job(getJobExperience(user))
+                .leader(getLeaderExperience(user))
+                .project(getProjectExperience(user))
+                .evaluation(getEvaluationExperience(user))
+                .build();
+    }
+
+    // ============== private methods ================
+
+    private List<RecentExperienceDto.JobDto> getJobExperience(UserEntity user) {
+        return jobQuestProgressRepository.findByUsers(user).stream()
+                .sorted(Comparator.comparing(JobQuestProgressEntity::getCreatedAt).reversed()
+                        .thenComparing(JobQuestProgressEntity::getWeek).reversed())
+                .map(jq -> new RecentExperienceDto.JobDto(jq.getExperience(), jq.getCreatedAt()))
+                .collect(Collectors.toList());
+    }
+
+    private List<RecentExperienceDto.LeaderDto> getLeaderExperience(UserEntity user) {
+        return leaderQuestProgressRepository.findByUsers(user).stream()
+                .sorted(Comparator.comparing(LeaderQuestProgressEntity::getCreatedAt).reversed()
+                        .thenComparing(lq -> lq.getWeek() != null ? lq.getWeek() : lq.getMonth(), Comparator.reverseOrder()))
+                .map(lq -> new RecentExperienceDto.LeaderDto(lq.getExperience(), lq.getCreatedAt(), lq.getLeaderQuests().getQuestName()))
+                .collect(Collectors.toList());
+    }
+
+    private List<RecentExperienceDto.ProjectDto> getProjectExperience(UserEntity user) {
+        return projectsRepository.findByUsers(user).stream()
+                .sorted(Comparator.comparing(ProjectsEntity::getCreatedAt).reversed())
+                .map(p -> new RecentExperienceDto.ProjectDto(p.getExperience(), p.getCreatedAt(), p.getProjectName()))
+                .collect(Collectors.toList());
+    }
+
+    private List<RecentExperienceDto.EvaluationDto> getEvaluationExperience(UserEntity user) {
+        return performanceEvaluationRepository.findByUsers(user).stream()
+                .sorted(Comparator.comparing(PerformanceEvaluationEntity::getCreatedAt).reversed())
+                .map(e -> new RecentExperienceDto.EvaluationDto(e.getExperience(), e.getCreatedAt()))
+                .collect(Collectors.toList());
     }
 }

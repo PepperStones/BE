@@ -15,4 +15,5 @@ public interface PerformanceEvaluationRepository extends JpaRepository<Performan
     void deleteByUsersAndEvaluationPeriodAndCreatedAtBetween(UserEntity users, EvaluationPeriod evaluationPeriod, LocalDate startDate, LocalDate endDate);
     List<PerformanceEvaluationEntity> findAllByUsersId(Long userId);
     List<PerformanceEvaluationEntity> findByUsersAndCreatedAtBetween(UserEntity user, LocalDate startDate, LocalDate endDate);
+    List<PerformanceEvaluationEntity> findByUsers(UserEntity user);
 }
