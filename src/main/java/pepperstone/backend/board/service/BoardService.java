@@ -1,17 +1,16 @@
 package pepperstone.backend.board.service;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
-import pepperstone.backend.common.entity.BoardsEntity;
-import pepperstone.backend.common.entity.UserEntity;
+import pepperstone.backend.common.entity.*;
+import pepperstone.backend.common.entity.enums.ChallengeType;
 import pepperstone.backend.common.entity.enums.UserRole;
-import pepperstone.backend.common.repository.BoardsRepository;
-import pepperstone.backend.common.repository.CenterGroupRepository;
-import pepperstone.backend.common.repository.UserRepository;
+import pepperstone.backend.common.repository.*;
+import pepperstone.backend.notification.service.FcmService;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -20,6 +19,10 @@ public class BoardService {
     private final UserRepository userRepo;
     private final CenterGroupRepository centerGroupRepo;
     private final BoardsRepository boardsRepo;
+    private final BoardTrackingRepository boardTrackingRepository;
+    private final ChallengeProgressRepository challengeProgressRepository;
+    private final ChallengesRepository challengesRepository;
+    private final FcmService fcmService;
 
     public Boolean isAdmin(final Long userId) {
         final UserEntity user = userRepo.findById(userId).orElse(null);
@@ -81,5 +84,64 @@ public class BoardService {
             throw new IllegalArgumentException("권한이 없는 게시글입니다.");
 
         return board;
+    }
+
+    @Transactional
+    public void checkAndUpdateChallenge(UserEntity user, BoardsEntity board) {
+        // 'BOARD_READ' 유형의 도전 과제 조회 또는 생성
+        ChallengesEntity challenge = challengesRepository.findByType(ChallengeType.BOARD_READ)
+                .orElseGet(() -> {
+                    ChallengesEntity newChallenge = ChallengesEntity.builder()
+                            .name("게시글 5개 조회")
+                            .description("게시판 탭에서 게시글 5개를 확인해보세요!")
+                            .requiredCount(5)
+                            .type(ChallengeType.BOARD_READ)
+                            .build();
+                    return challengesRepository.save(newChallenge);
+                });
+
+        // 게시글 조회 기록이 이미 있는지 확인
+        boolean alreadyTracked = boardTrackingRepository.existsByUsersAndBoards(user, board);
+        if (alreadyTracked) {
+            return; // 이미 기록된 게시글이면 로직 종료
+        }
+
+        // 새로운 게시글 조회 기록 저장
+        BoardTrackingEntity boardTracking = BoardTrackingEntity.builder()
+                .users(user)
+                .boards(board)
+                .build();
+        boardTrackingRepository.save(boardTracking);
+
+        // 해당 유저의 도전 과제 진행 상황 조회 또는 초기값으로 생성
+        ChallengeProgressEntity progress = challengeProgressRepository.findByUsersAndChallenges(user, challenge)
+                .orElseGet(() -> {
+                    ChallengeProgressEntity newProgress = new ChallengeProgressEntity();
+                    newProgress.setUsers(user);
+                    newProgress.setChallenges(challenge);
+                    newProgress.setCurrentCount(0);
+                    newProgress.setCompleted(false);
+                    newProgress.setReceive(false);
+                    return challengeProgressRepository.save(newProgress);
+                });
+
+        // 도전 과제가 이미 완료된 경우 메서드를 종료
+        if (progress.getCompleted()) {
+            return;
+        }
+
+        // 현재 진행 횟수를 증가
+        progress.setCurrentCount(progress.getCurrentCount() + 1);
+
+        // 도전 과제 완료 여부 체크
+        if (progress.getCurrentCount() >= challenge.getRequiredCount()) {
+            progress.setCompleted(true);
+
+            String title = "도전과제 달성!";
+            String body = "도전과제를 달성하셨습니다! 더 자세한 내용은 홈 탭 > 도전과제에서 확인해보세요.";
+            fcmService.sendPushChallenge(user, title, body);
+        }
+
+        challengeProgressRepository.save(progress);
     }
 }

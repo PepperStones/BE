@@ -219,6 +219,9 @@ public class BoardController {
 
             final BoardsEntity board = boardService.getBoardUser(boardId, user);
 
+            // 게시판 조회 완료 후, 도전과제 체크 후, 달성시 푸시 알림 로직 추가
+            boardService.checkAndUpdateChallenge(user, board);
+
             final BoardResponseDTO resDTO = BoardResponseDTO.builder()
                     .id(board.getId())
                     .centerGroup(board.getCenterGroup())
