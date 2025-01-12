@@ -50,13 +50,23 @@ public class BoardController {
             board.setUsers(userInfo);
 
             if (StringUtils.isNotBlank(dto.getCenterGroup())) {
-                if (!boardService.checkCenterGroup(dto.getCenterGroup()))
-                    throw new IllegalArgumentException("존재하지 않는 센터입니다.");
-                board.setCenterGroup(dto.getCenterGroup());
+                if (dto.getCenterGroup().equals("전체")) {
+                    board.setCenterGroup(null);
+                } else {
+                    if (!boardService.checkCenterGroup(dto.getCenterGroup()))
+                        throw new IllegalArgumentException("존재하지 않는 센터입니다.");
+
+                    board.setCenterGroup(dto.getCenterGroup());
+                }
             }
 
-            if (StringUtils.isNotBlank(dto.getJobGroup()))
-                board.setJobGroup(dto.getJobGroup());
+            if (StringUtils.isNotBlank(dto.getJobGroup())) {
+                if (dto.getJobGroup().equals("전체")) {
+                    board.setJobGroup(null);
+                } else {
+                    board.setJobGroup(dto.getCenterGroup());
+                }
+            }
 
             boardService.addOrUpdateBoard(board);
 
