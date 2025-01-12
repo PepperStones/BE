@@ -103,6 +103,7 @@ public class MypageController {
                     .skin(user.getSkin())
                     .decoration(user.getDecoration())
                     .effect(user.getEffect())
+                    .unlocklist(mypageService.unlockLists(user))
                     .build();
 
             return ResponseEntity.ok().body(Map.of("code", 200, "data", resDTO));
