@@ -1,4 +1,4 @@
-package pepperstone.backend.quest;
+package pepperstone.backend.quest.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

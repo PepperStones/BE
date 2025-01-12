@@ -9,7 +9,9 @@ import pepperstone.backend.common.entity.UserEntity;
 import pepperstone.backend.common.repository.JobQuestProgressRepository;
 import pepperstone.backend.common.repository.LeaderQuestProgressRepository;
 import pepperstone.backend.common.repository.UserRepository;
-import pepperstone.backend.quest.QuestProgressResponseDTO;
+import pepperstone.backend.quest.dto.request.QuestDetailRequestDTO;
+import pepperstone.backend.quest.dto.response.QuestProgressResponseDTO;
+import pepperstone.backend.quest.dto.response.WeeklyQuestResponseDTO;
 
 import java.util.List;
 
@@ -30,7 +32,7 @@ public class QuestService {
 
         return quests.stream()
                 .map(quest -> QuestProgressResponseDTO.jobQuests.builder()
-                        .id(quest.getId())
+                        .id(quest.getJobQuest().getId())
                         .period(quest.getJobQuest().getPeriod())
                         .accumulatedExperience(quest.getAccumulatedExperience() + quest.getExperience())
                         .maxStandard(quest.getJobQuest().getMaxStandard())
@@ -44,7 +46,7 @@ public class QuestService {
 
         return quests.stream()
                 .map(quest -> QuestProgressResponseDTO.leaderQuests.builder()
-                        .id(quest.getId())
+                        .id(quest.getLeaderQuests().getId())
                         .period(quest.getLeaderQuests().getPeriod())
                         .accumulatedExperience(quest.getAccumulatedExperience() + quest.getExperience())
                         .questName(quest.getLeaderQuests().getQuestName())
@@ -54,4 +56,10 @@ public class QuestService {
                         .build())
                 .toList();
     }
+
+//    public List<WeeklyQuestResponseDTO> getWeeklyQuests(final UserEntity user, final QuestDetailRequestDTO dto) {
+//        if (dto.getType().equals("job")) {
+//
+//        }
+//    }
 }

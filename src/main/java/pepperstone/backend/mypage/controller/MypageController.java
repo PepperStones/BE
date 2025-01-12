@@ -38,11 +38,12 @@ public class MypageController {
                     .id(user.getId())
                     .name(user.getName())
                     .companyNum(user.getCompanyNum())
+                    .centerGroup(user.getJobGroup().getCenterGroup().getCenterName())
                     .joinDate(user.getJoinDate())
                     .level(user.getLevel())
-                    .evaluationPeriod(evaluation.getEvaluationPeriod())
-                    .grade(evaluation.getGrade())
-                    .experience(evaluation.getExperience())
+                    .evaluationPeriod(evaluation == null ? null : evaluation.getEvaluationPeriod())
+                    .grade(evaluation == null ? null :evaluation.getGrade())
+                    .experience(evaluation == null ? 0 :evaluation.getExperience())
                     .build();
 
             return ResponseEntity.ok().body(Map.of("code", 200, "data", resDTO));
