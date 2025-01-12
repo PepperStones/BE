@@ -14,4 +14,5 @@ public interface JobQuestProgressRepository extends JpaRepository<JobQuestProgre
     List<JobQuestProgressEntity> findByJobQuestAndUsers(JobQuestsEntity jobQuest, UserEntity user);
     List<JobQuestProgressEntity> findByUsersAndCreatedAtBetween(UserEntity user, LocalDate start, LocalDate end);
     List<JobQuestProgressEntity> findByJobQuestIdAndUsers(Long jobQuestId, UserEntity user);
+    List<JobQuestProgressEntity> findByUsers(UserEntity user);
 }

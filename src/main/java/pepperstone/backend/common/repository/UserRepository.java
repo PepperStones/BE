@@ -28,4 +28,7 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
                                          @Param("centerGroup") String centerGroup,
                                          @Param("jobGroup") String jobGroup,
                                          Pageable pageable);
+
+    List<UserEntity> findByJobGroup_CenterGroup_CenterNameAndJobGroup_JobName(String centerGroup, String jobGroup);
+    List<UserEntity> findByJobGroupId(Long jobGroupId);
 }

@@ -60,6 +60,9 @@ public class BoardController {
 
             boardService.addOrUpdateBoard(board);
 
+            // 게시글 등록 후 알림 전송 로직 호출
+            boardService.sendNewBoardNotification(board);
+
             return ResponseEntity.ok().body(Map.of("code", 200, "data", true));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("code", 400, "data", e.getMessage()));
@@ -218,6 +221,9 @@ public class BoardController {
                 throw new IllegalArgumentException("유저 정보가 없습니다.");
 
             final BoardsEntity board = boardService.getBoardUser(boardId, user);
+
+            // 게시판 조회 완료 후, 도전과제 체크 후, 달성시 푸시 알림 로직 추가
+            boardService.checkAndUpdateChallenge(user, board);
 
             final BoardResponseDTO resDTO = BoardResponseDTO.builder()
                     .id(board.getId())
