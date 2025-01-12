@@ -32,9 +32,9 @@ public class ChallengeController {
     @PatchMapping("/receive")
     public ResponseEntity<Map<String, Object>> receiveChallengeReward(
             @AuthenticationPrincipal UserEntity userInfo,
-            @RequestParam Long challengeProgress_id) {
+            @RequestParam("challengeProgressId") Long challengeProgressId) {
         try {
-            return ResponseEntity.ok().body(Map.of("code", 200, "data", challengeService.receiveReward(userInfo, challengeProgress_id)));
+            return ResponseEntity.ok().body(Map.of("code", 200, "data", challengeService.receiveReward(userInfo, challengeProgressId)));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("code", 400, "message", e.getMessage()));
         } catch (RuntimeException e) {

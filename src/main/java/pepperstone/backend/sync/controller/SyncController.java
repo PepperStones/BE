@@ -25,7 +25,7 @@ public class SyncController {
     private static final String SPREADSHEET_ID = "1knh-jdu_Zyn8dsqE7Owds6TaVlGn4XZsTQ2U6ratgFs"; // 스프레스 시트id를 복사해둔곳을 여기에 저장
 
     @GetMapping("/googlesheet")
-    public ResponseEntity<Map<String, Object>> readSheet(@RequestParam String type) {
+    public ResponseEntity<Map<String, Object>> readSheet(@RequestParam("type") String type) {
         Map<String, Object> response = new HashMap<>();
         try {
             String message;

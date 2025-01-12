@@ -17,6 +17,7 @@ public class MyInfoResponseDTO {
     private Long id;
     private String name;
     private String companyNum;
+    private String centerGroup;
     private LocalDate joinDate;
     private String level;
     private EvaluationPeriod evaluationPeriod;

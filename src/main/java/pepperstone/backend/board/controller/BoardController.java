@@ -75,7 +75,7 @@ public class BoardController {
     @PageableAsQueryParam
     public ResponseEntity<Map<String, Object>> adminBoardsList(@AuthenticationPrincipal UserEntity userInfo,
                                                                @Parameter(hidden = true)
-                                                               @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+                                                               @PageableDefault(size = 50, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
         try {
             if (!boardService.isAdmin(userInfo.getId()))
                 throw new IllegalArgumentException("어드민이 아닙니다.");
@@ -181,7 +181,7 @@ public class BoardController {
     @PageableAsQueryParam
     public ResponseEntity<Map<String, Object>> boardsList(@AuthenticationPrincipal UserEntity userInfo,
                                                           @Parameter(hidden = true)
-                                                          @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+                                                          @PageableDefault(size = 50, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
         try {
             final UserEntity user = boardService.getUserInfo(userInfo.getId());
 

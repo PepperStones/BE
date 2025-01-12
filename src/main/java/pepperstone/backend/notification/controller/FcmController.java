@@ -21,7 +21,7 @@ public class FcmController {
 
     @PostMapping("/register")
     public ResponseEntity<Map<String, Object>> registerFcmToken(@AuthenticationPrincipal UserEntity userInfo,
-                                                                @RequestParam String token) {
+                                                                @RequestParam("token") String token) {
         try {
             // 입력값 검증
             if (userInfo == null || token == null || token.trim().isEmpty()) {
@@ -53,7 +53,7 @@ public class FcmController {
 
     @PatchMapping("/open")
     public ResponseEntity<Map<String, Object>> openNotification(@AuthenticationPrincipal UserEntity userInfo,
-                                                                @RequestParam Long pushId) {
+                                                                @RequestParam("pushId") Long pushId) {
         try {
             return ResponseEntity.ok(Map.of("code", 200, "data", fcmService.openNotification(userInfo, pushId)));
         } catch (IllegalArgumentException e) {

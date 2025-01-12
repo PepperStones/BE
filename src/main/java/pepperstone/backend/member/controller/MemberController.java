@@ -34,7 +34,7 @@ public class MemberController {
                                                              @RequestParam(value = "search", required = false) String search,
                                                              @RequestParam(value = "centerGroup", required = false) String centerGroup,
                                                              @RequestParam(value = "jobGroup", required = false) String jobGroup,
-                                                             @Parameter(hidden = true) @PageableDefault(sort = "companyNum", direction = Sort.Direction.ASC) Pageable pageable) {
+                                                             @Parameter(hidden = true) @PageableDefault(size = 50, sort = "companyNum", direction = Sort.Direction.ASC) Pageable pageable) {
         try {
             if (!memberService.isAdmin(userInfo.getId()))
                 throw new IllegalArgumentException("어드민이 아닙니다.");
@@ -98,7 +98,7 @@ public class MemberController {
 
             memberService.deleteMember(userId);
 
-            return ResponseEntity.ok().body(Map.of("code", 200, "data", true));
+            return ResponseEntity.ok().body(Map.of("code", 200, "data" , true));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("code", 400, "data", e.getMessage()));
         } catch (RuntimeException e) {
