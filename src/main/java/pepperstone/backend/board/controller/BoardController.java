@@ -60,6 +60,9 @@ public class BoardController {
 
             boardService.addOrUpdateBoard(board);
 
+            // 게시글 등록 후 알림 전송 로직 호출
+            boardService.sendNewBoardNotification(board);
+
             return ResponseEntity.ok().body(Map.of("code", 200, "data", true));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("code", 400, "data", e.getMessage()));

@@ -12,6 +12,8 @@ import pepperstone.backend.common.entity.enums.UserRole;
 import pepperstone.backend.common.repository.*;
 import pepperstone.backend.notification.service.FcmService;
 
+import java.util.List;
+
 @RequiredArgsConstructor
 @Slf4j
 @Service
@@ -143,5 +145,27 @@ public class BoardService {
         }
 
         challengeProgressRepository.save(progress);
+    }
+
+    // 신규 게시글 등록 후 알림 전송 로직
+    public void sendNewBoardNotification(BoardsEntity board) {
+        List<UserEntity> targetUsers;
+
+        // centerGroup과 jobGroup이 null인 경우 모든 유저에게 알림
+        if (board.getCenterGroup() == null && board.getJobGroup() == null) {
+            targetUsers = userRepo.findAll();
+        } else {
+            // centerGroup과 jobGroup에 따라 해당 소속 유저들에게 알림
+            targetUsers = userRepo.findByJobGroup_CenterGroup_CenterNameAndJobGroup_JobName(
+                    board.getCenterGroup(), board.getJobGroup()
+            );
+        }
+
+        String title = "신규 게시글 등록!";
+        String body = "신규 게시글이 등록되었습니다. 게시판 탭에서 등록된 내용을 확인해보세요.";
+
+        for (UserEntity user : targetUsers) {
+            fcmService.sendPushChallenge(user, body, title);
+        }
     }
 }
