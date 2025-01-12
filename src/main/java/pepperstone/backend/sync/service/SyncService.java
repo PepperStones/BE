@@ -36,6 +36,8 @@ public class SyncService {
         }
     }
 
+    // ============== private method ================
+
     // 현재의 메소드는 Sheets 인스턴스를 얻는 데 사용
     private Sheets getSheetsService() throws IOException, GeneralSecurityException {
         if (sheetsService == null) {

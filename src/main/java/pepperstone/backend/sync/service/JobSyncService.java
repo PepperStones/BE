@@ -122,6 +122,8 @@ public class JobSyncService {
         );
     }
 
+    // ============== private method ================
+
     private void checkAndUpdateChallenge(UserEntity user) {
         // "직무별 퀘스트 MAX 기준 10회 달성" 도전 과제 조회 또는 생성
         ChallengesEntity challenge = challengesRepository.findByType(ChallengeType.JOB_QUEST_MAX)

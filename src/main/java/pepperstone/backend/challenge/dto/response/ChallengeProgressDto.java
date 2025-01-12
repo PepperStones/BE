@@ -9,10 +9,9 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class ChallengeResponseDTO {
-    private Long challengesId;
-    private String name;
-    private String description;
-    private Integer requiredCount;
-    private ChallengeProgressResponseDTO challengeProgress;
+public class ChallengeProgressDto {
+    private Long challengeProgressId;
+    private Integer currentCount;
+    private Boolean completed;
+    private Boolean receive;
 }

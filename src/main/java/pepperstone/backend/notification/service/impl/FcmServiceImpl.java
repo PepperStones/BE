@@ -16,14 +16,16 @@ import pepperstone.backend.common.entity.UserEntity;
 import pepperstone.backend.common.entity.enums.EvaluationPeriod;
 import pepperstone.backend.common.repository.FcmRepository;
 import pepperstone.backend.common.repository.PushRepository;
-import pepperstone.backend.notification.dto.FcmMessageDto;
-import pepperstone.backend.notification.dto.FcmSendDto;
+import pepperstone.backend.notification.dto.request.FcmMessageDto;
+import pepperstone.backend.notification.dto.request.FcmSendDto;
+import pepperstone.backend.notification.dto.response.NotificationDto;
 import pepperstone.backend.notification.service.FcmService;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -147,6 +149,7 @@ public class FcmServiceImpl implements FcmService {
         }
     }
 
+    // 도전과제 알림 전송 메서드
     @Override
     public void sendPushChallenge(UserEntity user, String title, String body) {
         List<String> fcmTokens = fcmRepository.findByUsers(user)
@@ -180,6 +183,28 @@ public class FcmServiceImpl implements FcmService {
             log.warn("푸시 알림 전송 실패: 사용자 ID={}", user.getId());
         }
     }
+
+    // 푸시 알림 리스트 조회 메서드
+    @Override
+    public List<NotificationDto> getNotificationList(UserEntity user) {
+        List<PushEntity> pushList = pushRepository.findByUsersOrderByCreatedAtDesc(user);
+
+        if (pushList.isEmpty()) {
+            throw new IllegalArgumentException("No notifications found.");
+        }
+
+        return pushList.stream()
+                .map(push -> NotificationDto.builder()
+                        .pushId(push.getId())
+                        .title(push.getTitle())
+                        .content(push.getContent())
+                        .createdAt(push.getCreatedAt())
+                        .open(push.getOpen())
+                        .build())
+                .collect(Collectors.toList());
+    }
+
+    // ============== private method ================
 
     // FCM 메시지를 실제로 전송하는 메서드
     private int sendMessageTo(FcmSendDto fcmSendDto) throws IOException {

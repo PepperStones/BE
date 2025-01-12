@@ -4,9 +4,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import pepperstone.backend.challenge.dto.response.ChallengeProgressResponseDTO;
-import pepperstone.backend.challenge.dto.response.ChallengeReceiveResponseDTO;
-import pepperstone.backend.challenge.dto.response.ChallengeResponseDTO;
+import pepperstone.backend.challenge.dto.response.ChallengeProgressDto;
+import pepperstone.backend.challenge.dto.response.ChallengeReceiveDto;
+import pepperstone.backend.challenge.dto.response.ChallengeDto;
 import pepperstone.backend.common.entity.ChallengeProgressEntity;
 import pepperstone.backend.common.entity.ChallengesEntity;
 import pepperstone.backend.common.entity.UserEntity;
@@ -15,7 +15,6 @@ import pepperstone.backend.common.repository.ChallengeProgressRepository;
 import pepperstone.backend.common.repository.ChallengesRepository;
 
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -27,7 +26,7 @@ public class ChallengeService {
     private final ChallengesRepository challengesRepository;
 
     @Transactional
-    public ChallengeReceiveResponseDTO receiveReward(UserEntity user, Long challengeProgressId) {
+    public ChallengeReceiveDto receiveReward(UserEntity user, Long challengeProgressId) {
         // 도전 과제 진행 상황 조회
         ChallengeProgressEntity progress = challengeProgressRepository.findByIdAndUsers(challengeProgressId, user)
                 .orElseThrow(() -> new IllegalArgumentException("Challenge progress not found."));
@@ -42,13 +41,13 @@ public class ChallengeService {
         challengeProgressRepository.save(progress);
 
         // DTO에 응답 데이터 세팅 후 반환
-        return ChallengeReceiveResponseDTO.builder()
+        return ChallengeReceiveDto.builder()
                 .challengeProgressId(progress.getId())
                 .receive(progress.getReceive())
                 .build();
     }
 
-    public List<ChallengeResponseDTO> getChallengeList(UserEntity user) {
+    public List<ChallengeDto> getChallengeList(UserEntity user) {
         // 모든 도전 과제 유형에 대해 진행 상황을 조회하고 없으면 초기값으로 생성
         for (ChallengeType type : ChallengeType.values()) {
             getOrCreateChallengeProgress(user, type);
@@ -94,21 +93,21 @@ public class ChallengeService {
     }
 
     // 엔티티를 ChallengeResponseDTO로 변환하는 메서드
-    private ChallengeResponseDTO toChallengeResponseDTO(ChallengeProgressEntity progress) {
+    private ChallengeDto toChallengeResponseDTO(ChallengeProgressEntity progress) {
         ChallengesEntity challenge = progress.getChallenges();
 
-        return ChallengeResponseDTO.builder()
+        return ChallengeDto.builder()
                 .challengesId(challenge.getId())
                 .name(challenge.getName())
                 .description(challenge.getDescription())
                 .requiredCount(challenge.getRequiredCount())
-                .challengeProgress(toChallengeProgressResponseDTO(progress))
+                .challengeProgress(toChallengeProgress0Dto(progress))
                 .build();
     }
 
     // 엔티티를 ChallengeProgressResponseDTO로 변환하는 메서드
-    private ChallengeProgressResponseDTO toChallengeProgressResponseDTO(ChallengeProgressEntity progress) {
-        return ChallengeProgressResponseDTO.builder()
+    private ChallengeProgressDto toChallengeProgress0Dto(ChallengeProgressEntity progress) {
+        return ChallengeProgressDto.builder()
                 .challengeProgressId(progress.getId())
                 .currentCount(progress.getCurrentCount())
                 .completed(progress.getCompleted())

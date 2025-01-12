@@ -87,6 +87,8 @@ public class EvaluationSyncService {
         }
     }
 
+    // ============== private method ================
+
     private void checkAndUpdateChallenge(UserEntity user) {
         // 'GRADE_A_ACHIEVEMENT' 유형의 도전 과제를 조회
         ChallengesEntity challenge = challengesRepository.findByType(ChallengeType.PERFORMANCE_A)

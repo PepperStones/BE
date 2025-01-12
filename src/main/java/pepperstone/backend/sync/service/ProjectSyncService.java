@@ -78,6 +78,8 @@ public class ProjectSyncService {
 
     }
 
+    // ============== private method ================
+
     private void checkAndUpdateChallenge(UserEntity user) {
         // 'PROJECT_PARTICIPATION' 유형의 도전 과제를 조회
         ChallengesEntity challenge = challengesRepository.findByType(ChallengeType.PROJECT_PARTICIPATION)
