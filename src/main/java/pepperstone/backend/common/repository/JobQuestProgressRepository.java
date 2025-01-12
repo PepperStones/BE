@@ -6,10 +6,11 @@ import pepperstone.backend.common.entity.JobQuestProgressEntity;
 import pepperstone.backend.common.entity.JobQuestsEntity;
 import pepperstone.backend.common.entity.UserEntity;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Repository
 public interface JobQuestProgressRepository extends JpaRepository<JobQuestProgressEntity, Long> {
     List<JobQuestProgressEntity> findByJobQuestAndUsers(JobQuestsEntity jobQuest, UserEntity user);
-    List<JobQuestProgressEntity> findByUsers(UserEntity user);
+    List<JobQuestProgressEntity> findByUsersAndCreatedAtBetween(UserEntity user, LocalDate start, LocalDate end);
 }
