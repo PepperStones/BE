@@ -67,4 +67,19 @@ public class BoardService {
     public Slice<BoardsEntity> getFilterBoards(final String centerGroup, final String jobGroup, final Pageable pageable) {
         return boardsRepo.findAllWithFilters(centerGroup, jobGroup, pageable);
     }
+
+    public BoardsEntity getBoardUser(final Long boardId, final UserEntity userInfo) {
+        final BoardsEntity board = boardsRepo.findById(boardId).orElse(null);
+
+        if (board == null)
+            throw new IllegalArgumentException("게시글이 존재하지 않습니다.");
+
+        if (board.getCenterGroup() != null && !board.getCenterGroup().equals(userInfo.getJobGroup().getCenterGroup().getCenterName()))
+            throw new IllegalArgumentException("권한이 없는 게시글입니다.");
+
+        if (board.getJobGroup() != null && !board.getJobGroup().equals(userInfo.getJobGroup().getJobName()))
+            throw new IllegalArgumentException("권한이 없는 게시글입니다.");
+
+        return board;
+    }
 }

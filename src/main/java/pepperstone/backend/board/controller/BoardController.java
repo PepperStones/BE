@@ -99,7 +99,7 @@ public class BoardController {
     }
 
     @GetMapping("/admin/{boardId}")
-    public ResponseEntity<Map<String, Object>> adminBoardsList(@AuthenticationPrincipal UserEntity userInfo, @PathVariable("boardId") Long boardId) {
+    public ResponseEntity<Map<String, Object>> getAdminBoard(@AuthenticationPrincipal UserEntity userInfo, @PathVariable("boardId") Long boardId) {
         try {
             if (!boardService.isAdmin(userInfo.getId()))
                 throw new IllegalArgumentException("어드민이 아닙니다.");
@@ -200,6 +200,34 @@ public class BoardController {
                             .updatedAt(board.getUpdatedAt())
                             .build())
                     .toList();
+
+            return ResponseEntity.ok().body(Map.of("code", 200, "data", resDTO));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("code", 400, "data", e.getMessage()));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(500).body(Map.of("code", 500, "data", "게시글 불러오기 오류. 잠시 후 다시 시도해주세요."));
+        }
+    }
+
+    @GetMapping("/{boardId}")
+    public ResponseEntity<Map<String, Object>> getBoard(@AuthenticationPrincipal UserEntity userInfo, @PathVariable("boardId") Long boardId) {
+        try {
+            final UserEntity user = boardService.getUserInfo(userInfo.getId());
+
+            if (user == null)
+                throw new IllegalArgumentException("유저 정보가 없습니다.");
+
+            final BoardsEntity board = boardService.getBoardUser(boardId, user);
+
+            final BoardResponseDTO resDTO = BoardResponseDTO.builder()
+                    .id(board.getId())
+                    .centerGroup(board.getCenterGroup())
+                    .jobGroup(board.getJobGroup())
+                    .title(board.getTitle())
+                    .createdAt(board.getCreatedAt())
+                    .updatedAt(board.getUpdatedAt())
+                    .content(board.getContent())
+                    .build();
 
             return ResponseEntity.ok().body(Map.of("code", 200, "data", resDTO));
         } catch (IllegalArgumentException e) {
