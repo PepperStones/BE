@@ -120,6 +120,8 @@ public class LeaderSyncService {
         });
     }
 
+    // ============== private method ================
+
     private void addOrUpdateProgress(UserEntity user, LeaderQuestsEntity leaderQuest, int weekOrMonth,
                                      int experience, String achievementType, boolean isWeekly) {
 

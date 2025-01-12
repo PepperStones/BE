@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class ChallengeReceiveResponseDTO {
+public class ChallengeReceiveDto {
     private Long challengeProgressId;
     private Boolean receive;
 }

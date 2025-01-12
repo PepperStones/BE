@@ -7,6 +7,7 @@ import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.model.ValueRange;
 import com.google.auth.http.HttpCredentialsAdapter;
 import com.google.auth.oauth2.GoogleCredentials;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
@@ -14,6 +15,7 @@ import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.*;
 
+@Slf4j
 @Service
 public class SyncService {
     private static final String APPLICATION_NAME = "My First Project"; // Google Sheets 애플리케이션의 이름을 나타냄
@@ -33,6 +35,8 @@ public class SyncService {
             throw new RuntimeException("Failed to read data from the spreadsheet: " + e.getMessage(), e);
         }
     }
+
+    // ============== private method ================
 
     // 현재의 메소드는 Sheets 인스턴스를 얻는 데 사용
     private Sheets getSheetsService() throws IOException, GeneralSecurityException {

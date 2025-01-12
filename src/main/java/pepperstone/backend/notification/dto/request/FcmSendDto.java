@@ -1,4 +1,4 @@
-package pepperstone.backend.notification.dto;
+package pepperstone.backend.notification.dto.request;
 
 import lombok.*;
 

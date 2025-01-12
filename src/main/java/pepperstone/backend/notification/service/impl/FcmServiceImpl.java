@@ -9,6 +9,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.*;
 import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 import pepperstone.backend.common.entity.FcmEntity;
 import pepperstone.backend.common.entity.PushEntity;
@@ -16,14 +17,18 @@ import pepperstone.backend.common.entity.UserEntity;
 import pepperstone.backend.common.entity.enums.EvaluationPeriod;
 import pepperstone.backend.common.repository.FcmRepository;
 import pepperstone.backend.common.repository.PushRepository;
-import pepperstone.backend.notification.dto.FcmMessageDto;
-import pepperstone.backend.notification.dto.FcmSendDto;
+import pepperstone.backend.notification.dto.request.FcmMessageDto;
+import pepperstone.backend.notification.dto.request.FcmSendDto;
+import pepperstone.backend.notification.dto.response.NotificationDto;
+import pepperstone.backend.notification.dto.response.NotificationOpenDto;
 import pepperstone.backend.notification.service.FcmService;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -147,6 +152,7 @@ public class FcmServiceImpl implements FcmService {
         }
     }
 
+    // 도전과제 알림 전송 메서드
     @Override
     public void sendPushChallenge(UserEntity user, String title, String body) {
         List<String> fcmTokens = fcmRepository.findByUsers(user)
@@ -180,6 +186,54 @@ public class FcmServiceImpl implements FcmService {
             log.warn("푸시 알림 전송 실패: 사용자 ID={}", user.getId());
         }
     }
+
+    // 푸시 알림 리스트 조회 메서드
+    @Override
+    public List<NotificationDto> getNotificationList(UserEntity user) {
+        // 푸시 알림 생성 최신순으로 조히
+        List<PushEntity> pushList = pushRepository.findByUsersOrderByCreatedAtDesc(user);
+
+        if (pushList.isEmpty()) {
+            throw new IllegalArgumentException("No notifications found.");
+        }
+
+        // dto 구성
+        return pushList.stream()
+                .map(push -> NotificationDto.builder()
+                        .pushId(push.getId())
+                        .title(push.getTitle())
+                        .content(push.getContent())
+                        .createdAt(push.getCreatedAt())
+                        .open(push.getOpen())
+                        .build())
+                .collect(Collectors.toList());
+    }
+
+    // 푸시 알림 내역 열람 확인 메서드
+    @Override
+    @Transactional
+    public NotificationOpenDto openNotification(UserEntity user, Long pushId) {
+        // 푸시 알림 정보 조회
+        PushEntity push = pushRepository.findByIdAndUsers(pushId, user)
+                .orElseThrow(() -> new RuntimeException("Notification not found."));
+
+        // 이미 열람된 알림인지 확인
+        if (push.getOpen()) {
+            throw new IllegalArgumentException("Notification has already been opened.");
+        }
+
+        // 알림을 열람 상태로 변경
+        push.setOpen(true);
+        pushRepository.save(push);
+
+        // 응답 데이터 반환
+        return NotificationOpenDto.builder()
+                .pushId(push.getId())
+                .open(push.getOpen())
+                .build();
+    }
+
+    // ============== private method ================
 
     // FCM 메시지를 실제로 전송하는 메서드
     private int sendMessageTo(FcmSendDto fcmSendDto) throws IOException {
