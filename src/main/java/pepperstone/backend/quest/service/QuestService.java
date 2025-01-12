@@ -4,7 +4,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import pepperstone.backend.common.entity.*;
+import pepperstone.backend.common.entity.enums.Period;
 import pepperstone.backend.common.repository.*;
+import pepperstone.backend.quest.dto.response.QuestDetailResponseDTO;
 import pepperstone.backend.quest.dto.response.QuestProgressResponseDTO;
 
 import java.time.LocalDate;
@@ -100,9 +102,41 @@ public class QuestService {
                 ));
     }
 
-//    public List<WeeklyQuestResponseDTO> getWeeklyQuests(final UserEntity user, final QuestDetailRequestDTO dto) {
-//        if (dto.getType().equals("job")) {
-//
-//        }
-//    }
+    public QuestDetailResponseDTO getQuestDetails(final UserEntity user, final String type, final Long questId) {
+        if (type.equals("job")) {
+            final Period period = jobQuestRepo.findById(questId).get().getPeriod();
+
+            final List<JobQuestProgressEntity> quests = jobQuestProgressRepo.findByJobQuestIdAndUsers(questId, user);
+
+            final List<QuestDetailResponseDTO.Quest> details = quests.stream()
+                    .map(quest -> QuestDetailResponseDTO.Quest.builder()
+                            .unit(quest.getWeek())
+                            .experience(quest.getExperience())
+                            .build())
+                    .toList();
+
+            return QuestDetailResponseDTO.builder()
+                    .period(period)
+                    .questList(details)
+                    .build();
+        } else if (type.equals("leader")) {
+            final Period period = leaderQuestRepo.findById(questId).get().getPeriod();
+
+            List<LeaderQuestProgressEntity> quests = leaderQuestProgressRepo.findByLeaderQuestsIdAndUsers(questId, user);
+
+            final List<QuestDetailResponseDTO.Quest> details = quests.stream()
+                    .map(quest -> QuestDetailResponseDTO.Quest.builder()
+                            .unit(period == Period.MONTHLY ? quest.getMonth() : quest.getWeek())
+                            .experience(quest.getExperience())
+                            .build())
+                    .toList();
+
+            return QuestDetailResponseDTO.builder()
+                    .period(period)
+                    .questList(details)
+                    .build();
+        }
+
+        return null;
+    }
 }

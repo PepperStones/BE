@@ -11,4 +11,5 @@ import java.util.Optional;
 public interface LeaderQuestRepository extends JpaRepository<LeaderQuestsEntity, Long> {
     Optional<LeaderQuestsEntity> findByDepartmentAndJobGroupAndQuestName(String department, String jobGroup, String questName);
     List<LeaderQuestsEntity> findByDepartmentAndJobGroup(String department, String jobGroup);
+    Optional<LeaderQuestsEntity> findById(Long id);
 }

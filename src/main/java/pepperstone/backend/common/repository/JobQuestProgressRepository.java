@@ -13,4 +13,5 @@ import java.util.List;
 public interface JobQuestProgressRepository extends JpaRepository<JobQuestProgressEntity, Long> {
     List<JobQuestProgressEntity> findByJobQuestAndUsers(JobQuestsEntity jobQuest, UserEntity user);
     List<JobQuestProgressEntity> findByUsersAndCreatedAtBetween(UserEntity user, LocalDate start, LocalDate end);
+    List<JobQuestProgressEntity> findByJobQuestIdAndUsers(Long jobQuestId, UserEntity user);
 }
