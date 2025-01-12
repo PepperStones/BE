@@ -21,6 +21,7 @@ import java.util.Optional;
 public class ExperienceController {
     private final ExperienceService experienceService;
     private final UserRepository userRepository;
+
     @GetMapping("/current")
     public ResponseEntity<Map<String, Object>> getCurrentExperience(@AuthenticationPrincipal UserEntity userInfo) {
         try {
