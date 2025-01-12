@@ -22,7 +22,6 @@ import pepperstone.backend.user.dto.response.TokenResponseDTO;
 import pepperstone.backend.user.service.UserService;
 
 import java.util.Map;
-import java.util.Optional;
 
 @RestController
 @RequiredArgsConstructor
