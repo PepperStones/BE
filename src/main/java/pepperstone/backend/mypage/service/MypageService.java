@@ -5,11 +5,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.BindingResult;
 import pepperstone.backend.common.entity.PerformanceEvaluationEntity;
+import pepperstone.backend.common.entity.UnlockStatusEntity;
 import pepperstone.backend.common.entity.UserEntity;
 import pepperstone.backend.common.entity.enums.*;
 import pepperstone.backend.common.repository.PerformanceEvaluationRepository;
 import pepperstone.backend.common.repository.UnlockStatusRepository;
 import pepperstone.backend.common.repository.UserRepository;
+import pepperstone.backend.mypage.dto.response.StarResponseDTO;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -71,6 +73,18 @@ public class MypageService {
 
         if (!unlockStatusRepo.existsByUsersIdAndItemTypeAndItemValue(userId, type, value))
             throw new IllegalArgumentException("잠금 해제되지 않은 아이템입니다.");
+    }
+
+    public List<StarResponseDTO.unlockList> unlockLists (final UserEntity user) {
+        final List<UnlockStatusEntity> unlock = unlockStatusRepo.findAllByUsers(user);
+
+        return unlock.stream()
+                .map(u -> StarResponseDTO.unlockList.builder()
+                        .skin(u.getItemValue())
+                        .decoration("D0")
+                        .effect("E1")
+                        .build())
+                .toList();
     }
 
     // ============== private method ================
