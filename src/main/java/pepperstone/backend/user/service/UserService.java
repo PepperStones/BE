@@ -31,4 +31,8 @@ public class UserService {
             throw new IllegalArgumentException("비밀번호가 틀렸습니다.");
         }
     }
+
+    public UserEntity getUserInfo(final Long userId) {
+        return userRepo.findById(userId).orElse(null);
+    }
 }
