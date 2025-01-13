@@ -37,7 +37,15 @@ out/
 .vscode/
 
 ## 환경변수 설정
-*.yml
 *.properties
 src/main/resources/application.properties
 src/main/resources/application.yml
+
+## Mac
+.DS_Store
+
+## 리소스
+**/google.json
+
+## FCM 비공개키
+src/main/resources/firebase/pepperstone-firebase-adminsdk.json
