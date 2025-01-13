@@ -59,26 +59,6 @@ public class LeaderSyncService {
                 String questName = questInfo.get("questName").toString();
                 Period period = (Period) questInfo.get("period");
 
-//                // LeaderQuestsEntity 조회 또는 생성
-//                LeaderQuestsEntity leaderQuest = leaderQuestRepository.findByDepartmentAndJobGroupAndQuestName(
-//                                user.getJobGroup().getCenterGroup().getCenterName(),
-//                                user.getJobGroup().getJobName(),
-//                                questName)
-//                        .orElseGet(() -> {
-//                            // 새로운 리더 퀘스트 생성
-//                            LeaderQuestsEntity newQuest = new LeaderQuestsEntity();
-//                            newQuest.setDepartment(user.getJobGroup().getCenterGroup().getCenterName());
-//                            newQuest.setJobGroup(user.getJobGroup().getJobName());
-//                            newQuest.setQuestName(questName);
-//                            newQuest.setPeriod(period);
-//                            newQuest.setMaxPoints((Integer) questInfo.get("maxPoints"));
-//                            newQuest.setMedianPoints((Integer) questInfo.get("medianPoints"));
-//                            newQuest.setWeight((Integer) questInfo.get("weight"));
-//                            newQuest.setMaxCondition(questInfo.get("maxCondition").toString());
-//                            newQuest.setMedianCondition(questInfo.get("medianCondition").toString());
-//                            return leaderQuestRepository.save(newQuest);
-//                        });
-
                 // LeaderQuestsEntity 조회 또는 생성
                 String department = user.getJobGroup().getCenterGroup().getCenterName();
                 String jobGroup = user.getJobGroup().getJobName();
