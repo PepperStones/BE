@@ -147,8 +147,4 @@ public class MemberService {
     private void addMember(final UserEntity user) {
         userRepo.save(user);
     }
-
-    private void addUnlockItem(final UnlockStatusEntity unlockStatus) {
-        unlockStatusRepo.save(unlockStatus);
-    }
 }

@@ -67,42 +67,42 @@ public class UserEntity {
     private JobGroupEntity jobGroup;
 
     // users : performanceEvaluations = 1 : N
-    @OneToMany(mappedBy = "users")
+    @OneToMany(mappedBy = "users", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PerformanceEvaluationEntity> performanceEvaluations = new ArrayList<>();
 
     // users : jobQuestProgresses = 1 : N
-    @OneToMany(mappedBy = "users")
+    @OneToMany(mappedBy = "users", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<JobQuestProgressEntity> jobQuestProgresses = new ArrayList<>();
 
     // users : leaderQuestProgresses = 1 : N
-    @OneToMany(mappedBy = "users")
+    @OneToMany(mappedBy = "users", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<LeaderQuestProgressEntity> leaderQuestProgresses = new ArrayList<>();
 
     // users : projects = 1 : N
-    @OneToMany(mappedBy = "users")
+    @OneToMany(mappedBy = "users", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProjectsEntity> projects = new ArrayList<>();
 
     // users : boards = 1 : N
-    @OneToMany(mappedBy = "users")
+    @OneToMany(mappedBy = "users", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<BoardsEntity> boards = new ArrayList<>();
 
     // users : push = 1 : N
-    @OneToMany(mappedBy = "users")
+    @OneToMany(mappedBy = "users", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PushEntity> pushes = new ArrayList<>();
 
     // users : fcm = 1 : N
-    @OneToMany(mappedBy = "users")
+    @OneToMany(mappedBy = "users", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<FcmEntity> fcm = new ArrayList<>();
 
     // users : challengeProgress = 1 : N
-    @OneToMany(mappedBy = "users")
+    @OneToMany(mappedBy = "users", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ChallengeProgressEntity> challengeProgress = new ArrayList<>();
 
     // users : boardTracking = 1 : N
-    @OneToMany(mappedBy = "users")
+    @OneToMany(mappedBy = "users", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<BoardTrackingEntity> boardTracking = new ArrayList<>();
 
     // users : unlockStatus = 1 : N
-    @OneToMany(mappedBy = "users")
+    @OneToMany(mappedBy = "users", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<UnlockStatusEntity> unlockStatus = new ArrayList<>();
 }
