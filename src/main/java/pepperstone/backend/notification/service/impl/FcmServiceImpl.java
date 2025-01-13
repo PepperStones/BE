@@ -73,15 +73,53 @@ public class FcmServiceImpl implements FcmService {
     // 부여된 경험치를 인자로 받아 해당 유저가 가진 모든 FCM 토큰에 푸시 알림을 전송하는 메서드
     // 직무별 퀘스트 / 리더부여 / 전사 프로젝트
     @Override
-    public void sendExperienceNotification(UserEntity user, int experience) {
+    public void sendExperienceNotification(UserEntity user, int experience, int maxScore, int mediumScore, String type) {
         List<String> fcmTokens = fcmRepository.findByUsers(user)
                 .stream()
                 .map(FcmEntity::getToken)
                 .toList();
 
-        String title = "신규 경험치 " + experience + "do 획득!";
-        String body = experience + "do를 획득하셨습니다. 자세한 내용은 홈 탭 > 최근 획득 경험치에서 확인해보세요.";
+        String title = "";
+        String body = "";
+        final String exp_content = "do를 획득하셨습니다. 자세한 내용은 홈 탭 > 최근 획득 경험치에서 확인해보세요.";
+        final String end_content = "아쉽게 목표에는 달성하지 못했지만 다음엔 꼭 달성하실 수 있도록 곁에서 응원하겠습니다.";
 
+        if (type.equals("job")) {
+            if(experience >= maxScore) {
+                title = "직무별 퀘스트 MAX 달성!";
+                body = "직무별 퀘스트 MAX를 달성하여 " + experience + exp_content;
+            } else if (experience >= mediumScore) {
+                title = "직무별 퀘스트 MEDIUM 달성!";
+                body = "직무별 퀘스트 MEDIUM을 달성하여 " + experience + exp_content;
+            } else {
+                title = "직무별 퀘스트 종료";
+                body = "직무별 퀘스트 기간이 종료되었습니다" + end_content;
+            }
+        } else if (type.equals("leader")) {
+            if(experience >= maxScore) {
+                title = "리더부여 퀘스트 MAX 달성!";
+                body = "리더부여 퀘스트 MAX를 달성하여 " + experience + exp_content;
+            } else if (experience >= mediumScore) {
+                title = "리더부여 퀘스트 MEDIAN 달성!";
+                body = "리더부여 퀘스트 MEDIAN을 달성하여 " + experience + exp_content;
+            } else {
+                title = "리더부여 퀘스트 종료";
+                body = "리더부여 퀘스트 기간이 종료되었습니다." + end_content;
+            }
+        } else if (type.equals("project")) {
+            if(experience >= maxScore) {
+                title = "리더부여 퀘스트 MAX 달성!";
+                body = "리더부여 퀘스트 MAX를 달성하여 " + experience + end_content;
+            } else if (experience >= mediumScore) {
+                title = "리더부여 퀘스트 MEDIAN 달성!";
+                body = "리더부여 퀘스트 MEDIAN을 달성하여 " + experience + end_content;
+            } else {
+                title = "리더부여 퀘스트 종료";
+                body = "리더부여 퀘스트 기간이 종료되었습니다." + end_content;
+            }
+        }
+
+        // 하단 코드는 고정 - 정윤
         int successCount = 0;
         for (String token : fcmTokens) {
             try {

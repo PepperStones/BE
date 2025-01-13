@@ -59,23 +59,53 @@ public class LeaderSyncService {
                 String questName = questInfo.get("questName").toString();
                 Period period = (Period) questInfo.get("period");
 
+//                // LeaderQuestsEntity 조회 또는 생성
+//                LeaderQuestsEntity leaderQuest = leaderQuestRepository.findByDepartmentAndJobGroupAndQuestName(
+//                                user.getJobGroup().getCenterGroup().getCenterName(),
+//                                user.getJobGroup().getJobName(),
+//                                questName)
+//                        .orElseGet(() -> {
+//                            // 새로운 리더 퀘스트 생성
+//                            LeaderQuestsEntity newQuest = new LeaderQuestsEntity();
+//                            newQuest.setDepartment(user.getJobGroup().getCenterGroup().getCenterName());
+//                            newQuest.setJobGroup(user.getJobGroup().getJobName());
+//                            newQuest.setQuestName(questName);
+//                            newQuest.setPeriod(period);
+//                            newQuest.setMaxPoints((Integer) questInfo.get("maxPoints"));
+//                            newQuest.setMedianPoints((Integer) questInfo.get("medianPoints"));
+//                            newQuest.setWeight((Integer) questInfo.get("weight"));
+//                            newQuest.setMaxCondition(questInfo.get("maxCondition").toString());
+//                            newQuest.setMedianCondition(questInfo.get("medianCondition").toString());
+//                            return leaderQuestRepository.save(newQuest);
+//                        });
+
                 // LeaderQuestsEntity 조회 또는 생성
+                String department = user.getJobGroup().getCenterGroup().getCenterName();
+                String jobGroup = user.getJobGroup().getJobName();
+
+                // 변수화
+                int maxPoints = (Integer) questInfo.get("maxPoints");
+                int medianPoints = (Integer) questInfo.get("medianPoints");
+                int weight = (Integer) questInfo.get("weight");
+                String maxCondition = questInfo.get("maxCondition").toString();
+                String medianCondition = questInfo.get("medianCondition").toString();
+
                 LeaderQuestsEntity leaderQuest = leaderQuestRepository.findByDepartmentAndJobGroupAndQuestName(
-                                user.getJobGroup().getCenterGroup().getCenterName(),
-                                user.getJobGroup().getJobName(),
+                                department,
+                                jobGroup,
                                 questName)
                         .orElseGet(() -> {
                             // 새로운 리더 퀘스트 생성
                             LeaderQuestsEntity newQuest = new LeaderQuestsEntity();
-                            newQuest.setDepartment(user.getJobGroup().getCenterGroup().getCenterName());
-                            newQuest.setJobGroup(user.getJobGroup().getJobName());
+                            newQuest.setDepartment(department);
+                            newQuest.setJobGroup(jobGroup);
                             newQuest.setQuestName(questName);
                             newQuest.setPeriod(period);
-                            newQuest.setMaxPoints((Integer) questInfo.get("maxPoints"));
-                            newQuest.setMedianPoints((Integer) questInfo.get("medianPoints"));
-                            newQuest.setWeight((Integer) questInfo.get("weight"));
-                            newQuest.setMaxCondition(questInfo.get("maxCondition").toString());
-                            newQuest.setMedianCondition(questInfo.get("medianCondition").toString());
+                            newQuest.setMaxPoints(maxPoints);
+                            newQuest.setMedianPoints(medianPoints);
+                            newQuest.setWeight(weight);
+                            newQuest.setMaxCondition(maxCondition);
+                            newQuest.setMedianCondition(medianCondition);
                             return leaderQuestRepository.save(newQuest);
                         });
 
@@ -102,7 +132,7 @@ public class LeaderSyncService {
                     // 해당 주 또는 월에 진행된 기록이 없는 경우에만 진행 상황 추가 또는 업데이트
                     if (!existingWeeksOrMonths.contains(monthOrWeek)) {
                         // 새로운 진행 상황을 추가하거나 기존 진행 상황을 업데이트
-                        addOrUpdateProgress(user, leaderQuest, monthOrWeek, experience, achievementType, period == Period.WEEKLY);
+                        addOrUpdateProgress(user, leaderQuest, monthOrWeek, experience, achievementType, period == Period.WEEKLY, maxPoints, medianPoints);
 
                         // 업적 유형이 "Max"인 경우 새로 달성된 Max 업적 횟수를 증가
                         if (isMaxAchieved) {
@@ -123,7 +153,7 @@ public class LeaderSyncService {
     // ============== private method ================
 
     private void addOrUpdateProgress(UserEntity user, LeaderQuestsEntity leaderQuest, int weekOrMonth,
-                                     int experience, String achievementType, boolean isWeekly) {
+                                     int experience, String achievementType, boolean isWeekly, int maxScore, int medianScore) {
 
         // 누적 경험치 계산: 가장 최신 week 또는 month 기준으로 진행 정보 조회
         int accumulatedExperience = isWeekly
@@ -154,7 +184,7 @@ public class LeaderSyncService {
         leaderQuestProgressRepository.save(newProgress);
 
         // 푸시 알림 전송
-        fcmService.sendExperienceNotification(user, experience);
+        fcmService.sendExperienceNotification(user, experience, maxScore, medianScore,"leader");
     }
 
     private void checkAndUpdateChallenge(UserEntity user, int count) {
