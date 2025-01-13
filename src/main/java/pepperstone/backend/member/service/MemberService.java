@@ -135,6 +135,14 @@ public class MemberService {
         return userRepo.existsByUserId(userId);
     }
 
+    public Boolean checkCompanyNum(final String companyNum) {
+        // 10자리인지 확인 && 숫자만 있는지 확인
+        if (companyNum.length() != 10 || !companyNum.matches("\\d+"))
+            return false;
+
+        return true;
+    }
+
     // ============== private method ================
 
     private boolean isNotBlank(String value) {
