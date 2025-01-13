@@ -16,7 +16,7 @@ public class MemberAddRequestDTO {
     private String name;
     private LocalDate joinDate;
     private String centerGroup;
-    private String jobGroupName;
+    private String jobGroup;
     private String level;
     private String userId;
     private String initPassword;
