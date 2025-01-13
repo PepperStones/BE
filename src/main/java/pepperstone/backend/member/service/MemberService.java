@@ -88,7 +88,7 @@ public class MemberService {
     @Transactional
     public void addMemberAndJobGroup(MemberAddRequestDTO dto) {
         try {
-            final JobGroupEntity jobGroup = addJobGroup(dto.getJobGroupName(), dto.getCenterGroup());
+            final JobGroupEntity jobGroup = addJobGroup(dto.getJobGroup(), dto.getCenterGroup());
 
             final UserEntity user = UserEntity.builder()
                     .companyNum(dto.getCompanyNum())
