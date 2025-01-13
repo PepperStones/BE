@@ -1,5 +1,5 @@
 name: BackEnd - CI/CD - deploy
- 
+
 on:
   push:
     branches: ["main"]
@@ -37,8 +37,16 @@ jobs:
         cd ./resources
         touch ./application.yml
         echo "$APPLICATION" > ./application.yml
+        mkdir firebase
+        touch ./firebase/pepperstone-firebase-adminsdk.json
+        echo "$FIREBASE_ADMINSDK" > ./firebase/pepperstone-firebase-adminsdk.json
+        mkdir googlesheet
+        touch ./googlesheet/google.json
+        echo "$GOOGLESHEET" > ./googlesheet/google.json
       env:
         APPLICATION: ${{ secrets.APPLICATION }}
+        FIREBASE_ADMINSDK: ${{ secrets.FIREBASE_ADMINSDK }}
+        GOOGLESHEET: ${{ secrets.GOOGLESHEET }}
       shell: bash
 
     - name: Gradle 권한 부여
