@@ -131,6 +131,10 @@ public class MemberService {
         }
     }
 
+    public Boolean duplicateUserId(final String userId) {
+        return userRepo.existsByUserId(userId);
+    }
+
     // ============== private method ================
 
     private boolean isNotBlank(String value) {

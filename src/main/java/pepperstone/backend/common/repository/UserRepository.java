@@ -31,4 +31,5 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
 
     List<UserEntity> findByJobGroup_CenterGroup_CenterNameAndJobGroup_JobName(String centerGroup, String jobGroup);
     List<UserEntity> findByJobGroupId(Long jobGroupId);
+    Boolean existsByUserId(String userId);
 }
