@@ -20,7 +20,7 @@ import java.util.*;
 public class SyncService {
     private static final String APPLICATION_NAME = "My First Project"; // Google Sheets 애플리케이션의 이름을 나타냄
     private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance(); // 상수는 JSON 데이터를 처리하기 위한 JsonFactory 인스턴스를 제공
-    private static final String CREDENTIALS_FILE_PATH = "/googlesheet/google.json"; // 인증에 사용되는 JSON 파링릐 경로를 지정
+    private static final String CREDENTIALS_FILE_PATH = "googlesheet/google.json"; // 인증에 사용되는 JSON 파링릐 경로를 지정
     private Sheets sheetsService;
 
     public List<List<Object>> readSheet(String spreadsheetId, String range) {
