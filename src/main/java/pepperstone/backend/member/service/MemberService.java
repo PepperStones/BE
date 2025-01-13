@@ -23,6 +23,7 @@ import pepperstone.backend.member.dto.request.MemberUpdateRequestDTO;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.IntStream;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -102,25 +103,31 @@ public class MemberService {
                     .role(UserRole.USER)
                     .build();
 
+            unlockStatusRepo.save(UnlockStatusEntity.builder()
+                    .itemType(ItemType.SKIN)
+                    .itemValue("S0")
+                    .users(user)
+                    .build());
+
             final Map<ItemType, String> itemMap = Map.of(
-                    ItemType.SKIN, "S",
                     ItemType.DECORATION, "D",
                     ItemType.EFFECT, "E"
             );
 
-            for (Map.Entry<ItemType, String> entry : itemMap.entrySet()) {
-                final UnlockStatusEntity unlockStatus = UnlockStatusEntity.builder()
-                        .itemType(entry.getKey())
-                        .itemValue(entry.getValue() + "0")
-                        .users(user)
-                        .build();
-
-                unlockStatusRepo.save(unlockStatus);
-            }
+            itemMap.forEach((itemType, itemPrefix) -> {
+                IntStream.range(0, 6).forEach(i -> {
+                    unlockStatusRepo.save(UnlockStatusEntity.builder()
+                            .itemType(itemType)
+                            .itemValue(itemPrefix + i)
+                            .users(user)
+                            .build());
+                });
+            });
 
             addMember(user);
         } catch (Exception e) {
-            throw new IllegalArgumentException("구성원 추가 오류. 잠시 후 다시 시도해주세요.");
+            e.printStackTrace();
+            throw new IllegalArgumentException("구성원 추가 오류. 잠시 후 다시 시도해주세요.", e);
         }
     }
 
@@ -146,9 +153,5 @@ public class MemberService {
 
     private void addMember(final UserEntity user) {
         userRepo.save(user);
-    }
-
-    private void addUnlockItem(final UnlockStatusEntity unlockStatus) {
-        unlockStatusRepo.save(unlockStatus);
     }
 }

@@ -64,7 +64,7 @@ public class BoardController {
                 if (dto.getJobGroup().equals("전체")) {
                     board.setJobGroup(null);
                 } else {
-                    board.setJobGroup(dto.getCenterGroup());
+                    board.setJobGroup(dto.getJobGroup());
                 }
             }
 
