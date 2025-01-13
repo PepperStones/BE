@@ -127,6 +127,12 @@ public class MemberController {
     @PostMapping("/add")
     public ResponseEntity<Map<String, Object>> addMember(@RequestBody MemberAddRequestDTO dto) {
         try {
+            if(memberService.duplicateUserId(dto.getUserId()))
+                throw new IllegalArgumentException("중복된 아이디입니다.");
+
+            if(!memberService.checkCompanyNum(dto.getCompanyNum()))
+                throw new IllegalArgumentException("사번이 잘못되었습니다.");
+
             memberService.addMemberAndJobGroup(dto);
 
             return ResponseEntity.ok().body(Map.of("code", 200, "data", true));
