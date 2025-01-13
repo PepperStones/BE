@@ -74,10 +74,6 @@ public class UserEntity {
     @OneToMany(mappedBy = "users")
     private List<JobQuestProgressEntity> jobQuestProgresses = new ArrayList<>();
 
-    // users : productivityHistories = 1 : N
-    @OneToMany(mappedBy = "users")
-    private List<JobQuestProductivityHistoryEntity> productivityHistories = new ArrayList<>();
-
     // users : leaderQuestProgresses = 1 : N
     @OneToMany(mappedBy = "users")
     private List<LeaderQuestProgressEntity> leaderQuestProgresses = new ArrayList<>();
