@@ -116,9 +116,10 @@ public class JobSyncService {
             }
         }
 
+        // type, maxScore(80), mediumScore(40)
         // 모든 동기화 완료 후, 한 번에 푸시 알림 전송
         experienceMap.forEach((user, totalExperience) ->
-                fcmService.sendExperienceNotification(user, totalExperience)
+                fcmService.sendExperienceNotification(user, totalExperience, maxScore, mediumScore, "job")
         );
     }
 
