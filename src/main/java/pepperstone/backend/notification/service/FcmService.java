@@ -13,7 +13,7 @@ import java.util.Map;
 public interface FcmService {
     void sendPushNotification(String title, String body, String token);
     void saveFcmToken(String token, UserEntity user);
-    void sendExperienceNotification(UserEntity user, int experience);
+    void sendExperienceNotification(UserEntity user, int experience, int maxScore, int mediumScore, String type);
     void sendEvaluationNotification(UserEntity user, EvaluationPeriod period);
     void sendPushChallenge(UserEntity user, String title, String body);
     List<NotificationDto> getNotificationList(UserEntity user);

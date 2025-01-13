@@ -70,7 +70,7 @@ public class ProjectSyncService {
             projectsRepository.save(project);
 
             // 푸시 알림 전송
-            fcmService.sendExperienceNotification(user, experience);
+            fcmService.sendExperienceNotification(user, experience, 0, 0,"project");
 
             // 도전 과제 체크 및 업데이트
             checkAndUpdateChallenge(user);
