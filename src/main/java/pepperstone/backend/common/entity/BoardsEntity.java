@@ -42,6 +42,6 @@ public class BoardsEntity {
     private UserEntity users;
 
     // boards : boardTracking = 1 : N
-    @OneToMany(mappedBy = "boards")
+    @OneToMany(mappedBy = "boards", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<BoardTrackingEntity> boardTracking = new ArrayList<>();
 }
