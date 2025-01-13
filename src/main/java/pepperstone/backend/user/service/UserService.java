@@ -21,6 +21,9 @@ public class UserService {
     }
 
     public UserEntity getByCredentials(final String userId, final String password) {
+        if (!userRepo.existsByUserId(userId))
+            throw new IllegalArgumentException("잘못된 아이디입니다.");
+
         UserEntity originalUser = userRepo.findByUserId(userId);
 
         if(userId.equals(originalUser.getUserId()) && password.equals(originalUser.getPassword())) {
