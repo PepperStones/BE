@@ -12,4 +12,5 @@ import lombok.NoArgsConstructor;
 public class ChallengeReceiveDto {
     private Long challengeProgressId;
     private Boolean receive;
+    private String itemValue;
 }

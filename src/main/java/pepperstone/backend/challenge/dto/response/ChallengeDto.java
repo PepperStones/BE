@@ -14,5 +14,6 @@ public class ChallengeDto {
     private String name;
     private String description;
     private Integer requiredCount;
+    private String itemValue;
     private ChallengeProgressDto challengeProgress;
 }
