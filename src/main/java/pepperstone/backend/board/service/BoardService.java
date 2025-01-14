@@ -165,7 +165,7 @@ public class BoardService {
         String body = "신규 게시글이 등록되었습니다. 게시판 탭에서 등록된 내용을 확인해보세요.";
 
         for (UserEntity user : targetUsers) {
-            fcmService.sendPushChallenge(user, body, title);
+            fcmService.sendPushChallenge(user, title, body);
         }
     }
 }
