@@ -62,6 +62,7 @@ public class ChallengeService {
         return ChallengeReceiveDto.builder()
                 .challengeProgressId(progress.getId())
                 .receive(progress.getReceive())
+                .itemValue(itemValue)
                 .build();
     }
 
@@ -133,6 +134,7 @@ public class ChallengeService {
                 .name(challenge.getName())
                 .description(challenge.getDescription())
                 .requiredCount(challenge.getRequiredCount())
+                .itemValue(getItemForChallenge(challenge.getType()))
                 .challengeProgress(toChallengeProgress0Dto(progress))
                 .build();
     }
