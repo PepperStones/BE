@@ -11,10 +11,12 @@ import pepperstone.backend.common.entity.UserEntity;
 import pepperstone.backend.common.entity.enums.ItemType;
 import pepperstone.backend.mypage.dto.response.MyInfoResponseDTO;
 import pepperstone.backend.mypage.dto.response.StarResponseDTO;
+import pepperstone.backend.mypage.dto.response.UnlockResponseDTO;
 import pepperstone.backend.mypage.dto.resquest.UpdatePWRequestDTO;
 import pepperstone.backend.mypage.dto.resquest.UpdateStarRequestDTO;
 import pepperstone.backend.mypage.service.MypageService;
 
+import java.util.Arrays;
 import java.util.Map;
 
 @RestController
@@ -99,11 +101,13 @@ public class MypageController {
             if (user == null)
                 throw new IllegalArgumentException("나의 정보가 없습니다.");
 
-            final StarResponseDTO resDTO = StarResponseDTO.builder()
-                    .skin(user.getSkin())
-                    .decoration(user.getDecoration())
-                    .effect(user.getEffect())
-                    .unlocklist(mypageService.unlockLists(user))
+            final UnlockResponseDTO resDTO = UnlockResponseDTO.builder()
+                    .nowSkin(user.getSkin())
+                    .nowDecoration(user.getDecoration())
+                    .nowEffect(user.getEffect())
+                    .skins(mypageService.unlockSkinList(user))
+                    .decorations(Arrays.asList("D0", "D1", "D2", "D3", "D4", "D5"))
+                    .effects(Arrays.asList("E0", "E1", "E2", "E3", "E4", "E5"))
                     .build();
 
             return ResponseEntity.ok().body(Map.of("code", 200, "data", resDTO));
