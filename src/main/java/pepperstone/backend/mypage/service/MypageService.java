@@ -12,8 +12,10 @@ import pepperstone.backend.common.repository.PerformanceEvaluationRepository;
 import pepperstone.backend.common.repository.UnlockStatusRepository;
 import pepperstone.backend.common.repository.UserRepository;
 import pepperstone.backend.mypage.dto.response.StarResponseDTO;
+import pepperstone.backend.mypage.dto.response.UnlockResponseDTO;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -75,16 +77,16 @@ public class MypageService {
             throw new IllegalArgumentException("잠금 해제되지 않은 아이템입니다.");
     }
 
-    public List<StarResponseDTO.unlockList> unlockLists (final UserEntity user) {
-        final List<UnlockStatusEntity> unlock = unlockStatusRepo.findAllByUsers(user);
+    public List<String> unlockSkinList(final UserEntity user) {
+        final List<UnlockStatusEntity> unlockList = unlockStatusRepo.findAllByUsers(user);
+        List<String> skinList = new ArrayList<>();
 
-        return unlock.stream()
-                .map(u -> StarResponseDTO.unlockList.builder()
-                        .skin(u.getItemValue())
-                        .decoration("D0")
-                        .effect("E1")
-                        .build())
-                .toList();
+        for (UnlockStatusEntity unlock : unlockList) {
+            if (unlock.getItemType() == ItemType.SKIN)
+                skinList.add(unlock.getItemValue());
+        }
+
+        return skinList;
     }
 
     // ============== private method ================
