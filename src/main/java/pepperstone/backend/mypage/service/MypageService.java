@@ -69,10 +69,6 @@ public class MypageService {
     }
 
     public void validateUnlocked(Long userId, ItemType type, String value) {
-        // 기본 아이템(S0, D0, E0)은 항상 사용 가능
-        if (isDefaultItem(type, value))
-            return;
-
         if (!unlockStatusRepo.existsByUsersIdAndItemTypeAndItemValue(userId, type, value))
             throw new IllegalArgumentException("잠금 해제되지 않은 아이템입니다.");
     }
@@ -87,15 +83,5 @@ public class MypageService {
         }
 
         return skinList;
-    }
-
-    // ============== private method ================
-
-    private boolean isDefaultItem(ItemType type, String value) {
-        return switch (type) {
-            case SKIN -> value.equals("S0");
-            case DECORATION -> value.equals("D0");
-            case EFFECT -> value.equals("E0");
-        };
     }
 }
