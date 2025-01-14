@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
+import java.util.Map;
+
 // FCM 전송 Format DTO
 @Getter
 @Builder
@@ -17,6 +19,7 @@ public class FcmMessageDto {
     public static class Message {
         private Notification notification; // 알림 정보
         private String token; // 수신자 토큰
+        private Map<String, String> data; // timestamp를 포함한 data 필드 추가
     }
 
     @Builder

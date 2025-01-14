@@ -201,6 +201,7 @@ public class FcmServiceImpl implements FcmService {
         int successCount = 0;
         for (String token : fcmTokens) {
             try {
+                log.info("token: {}", token);
                 sendPushNotification(title, body, token);
                 successCount++;
             } catch (Exception e) {
@@ -339,7 +340,9 @@ public class FcmServiceImpl implements FcmService {
                                 .body(fcmSendDto.getBody())
                                 .image(null) // 이미지 필드는 null로 설정
                                 .build()
-                        ).build())
+                        )
+                        .data(Map.of("timestamp", String.valueOf(System.currentTimeMillis()))) // 타임 스탬프 추가
+                        .build())
                 .validateOnly(false) // 실제로 메시지를 전송하도록 설정
                 .build();
 
