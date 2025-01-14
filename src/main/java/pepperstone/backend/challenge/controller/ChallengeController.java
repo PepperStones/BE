@@ -32,10 +32,10 @@ public class ChallengeController {
         }
     }
 
-    @PatchMapping("/receive")
+    @PatchMapping("/receive/{challengeProgressId}")
     public ResponseEntity<Map<String, Object>> receiveChallengeReward(
             @AuthenticationPrincipal UserEntity userInfo,
-            @RequestParam("challengeProgressId") Long challengeProgressId) {
+            @PathVariable("challengeProgressId") Long challengeProgressId) {
         try {
             Optional<UserEntity> user = userRepository.findById(userInfo.getId());
 
