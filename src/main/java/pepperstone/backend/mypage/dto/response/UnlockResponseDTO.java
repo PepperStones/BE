@@ -19,6 +19,6 @@ public class UnlockResponseDTO {
     private Decoration nowDecoration;
     private Effect nowEffect;
     private List<String> skins;
-    private List<String> decorations;
-    private List<String> effects;
+    private String decorations;
+    private String effects;
 }

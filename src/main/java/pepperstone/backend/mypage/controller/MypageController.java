@@ -106,8 +106,8 @@ public class MypageController {
                     .nowDecoration(user.getDecoration())
                     .nowEffect(user.getEffect())
                     .skins(mypageService.unlockSkinList(user))
-                    .decorations(Arrays.asList("D0", "D1", "D2", "D3", "D4", "D5"))
-                    .effects(Arrays.asList("E0", "E1", "E2", "E3", "E4", "E5"))
+                    .decorations("D0")
+                    .effects("E0")
                     .build();
 
             return ResponseEntity.ok().body(Map.of("code", 200, "data", resDTO));
