@@ -70,7 +70,11 @@ public class HomeService {
 
     // 팀원 데이터를 생성하는 메서드
     private HomeDto.TeamDto getTeamData(UserEntity user) {
-        List<UserEntity> teamMembers = userRepository.findByJobGroupId(user.getJobGroup().getId());
+        List<UserEntity> teamMembers = userRepository.findByJobGroup_JobNameAndJobGroup_CenterGroup_Id(
+                user.getJobGroup().getJobName(),
+                user.getJobGroup().getCenterGroup().getId()
+        );
+
         List<String> levels = teamMembers.stream()
                 .map(UserEntity::getLevel)
                 .collect(Collectors.toList());
