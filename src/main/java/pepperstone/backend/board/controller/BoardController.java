@@ -163,16 +163,16 @@ public class BoardController {
 
             final BoardsEntity board = boardService.getBoard(boardId);
 
-            if (dto.getCenterGroup().equals("전체")) {
-                board.setCenterGroup(null);
-            } else {
+            if (dto.getCenterGroup() == null) {
                 board.setCenterGroup(dto.getCenterGroup());
+            } else if (dto.getCenterGroup().equals("전체")) {
+                board.setCenterGroup(null);
             }
 
-            if (dto.getJobGroup().equals("전체")) {
-                board.setJobGroup(null);
-            } else {
+            if (dto.getJobGroup() == null) {
                 board.setJobGroup(dto.getJobGroup());
+            } else if (dto.getJobGroup().equals("전체")) {
+                board.setJobGroup(null);
             }
 
             if (StringUtils.isNotBlank(dto.getTitle()))
