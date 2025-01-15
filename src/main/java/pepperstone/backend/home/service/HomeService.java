@@ -60,6 +60,9 @@ public class HomeService {
                 .level(user.getLevel())
                 .centerName(user.getJobGroup().getCenterGroup().getCenterName())
                 .jobName(user.getJobGroup().getJobName())
+                .skin(user.getSkin())
+                .decoration(user.getDecoration())
+                .effect(user.getEffect())
                 .recentExperience(recentExperience)
                 .totalExperienceThisYear(totalExperienceThisYear)
                 .build();
