@@ -103,26 +103,20 @@ public class MemberService {
                     .role(UserRole.USER)
                     .build();
 
-            unlockStatusRepo.save(UnlockStatusEntity.builder()
-                    .itemType(ItemType.SKIN)
-                    .itemValue("S0")
-                    .users(user)
-                    .build());
-
             final Map<ItemType, String> itemMap = Map.of(
+                    ItemType.SKIN, "S",
                     ItemType.DECORATION, "D",
                     ItemType.EFFECT, "E"
             );
 
-            itemMap.forEach((itemType, itemPrefix) -> {
-                IntStream.range(0, 6).forEach(i -> {
-                    unlockStatusRepo.save(UnlockStatusEntity.builder()
-                            .itemType(itemType)
-                            .itemValue(itemPrefix + i)
-                            .users(user)
-                            .build());
-                });
-            });
+            for (Map.Entry<ItemType, String> entry : itemMap.entrySet()) {
+                final UnlockStatusEntity unlockStatus = UnlockStatusEntity.builder()
+                        .itemType(entry.getKey())
+                        .itemValue(entry.getValue() + "0")
+                        .users(user)
+                        .build();
+                unlockStatusRepo.save(unlockStatus);
+            }
 
             addMember(user);
         } catch (Exception e) {
