@@ -30,6 +30,6 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
                                          Pageable pageable);
 
     List<UserEntity> findByJobGroup_CenterGroup_CenterNameAndJobGroup_JobName(String centerGroup, String jobGroup);
-    List<UserEntity> findByJobGroupId(Long jobGroupId);
     Boolean existsByUserId(String userId);
+    List<UserEntity> findByJobGroup_JobNameAndJobGroup_CenterGroup_Id(String jobName, Long centerGroupId);
 }
