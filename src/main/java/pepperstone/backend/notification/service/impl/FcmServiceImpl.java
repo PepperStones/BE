@@ -326,13 +326,12 @@ public class FcmServiceImpl implements FcmService {
                 .builder()
                 .message(FcmMessageDto.Message.builder()
                         .token(fcmSendDto.getToken())
-                        .notification(FcmMessageDto.Data.builder()
+                        .data(FcmMessageDto.Data.builder()
                                 .title(fcmSendDto.getTitle())
                                 .body(fcmSendDto.getBody())
                                 .image(null) // 이미지 필드는 null로 설정
                                 .build()
                         )
-                        .data(Map.of("timestamp", String.valueOf(System.currentTimeMillis()))) // 타임 스탬프 추가
                         .build())
                 .validateOnly(false) // 실제로 메시지를 전송하도록 설정
                 .build();
