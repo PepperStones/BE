@@ -326,7 +326,7 @@ public class FcmServiceImpl implements FcmService {
                 .builder()
                 .message(FcmMessageDto.Message.builder()
                         .token(fcmSendDto.getToken())
-                        .notification(FcmMessageDto.Notification.builder()
+                        .notification(FcmMessageDto.Data.builder()
                                 .title(fcmSendDto.getTitle())
                                 .body(fcmSendDto.getBody())
                                 .image(null) // 이미지 필드는 null로 설정
