@@ -93,7 +93,7 @@ public class FcmServiceImpl implements FcmService {
                 body = "직무별 퀘스트 MEDIUM을 달성하여 " + experience + exp_content;
             } else {
                 title = "직무별 퀘스트 종료";
-                body = "직무별 퀘스트 기간이 종료되었습니다" + end_content;
+                body = "직무별 퀘스트 기간이 종료되었습니다. " + end_content;
             }
         } else if (type.equals("leader")) {
             if(experience >= maxScore) {
@@ -104,22 +104,13 @@ public class FcmServiceImpl implements FcmService {
                 body = "리더부여 퀘스트 MEDIAN을 달성하여 " + experience + exp_content;
             } else {
                 title = "리더부여 퀘스트 종료";
-                body = "리더부여 퀘스트 기간이 종료되었습니다." + end_content;
+                body = "리더부여 퀘스트 기간이 종료되었습니다. " + end_content;
             }
         } else if (type.equals("project")) {
-            if(experience >= maxScore) {
-                title = "리더부여 퀘스트 MAX 달성!";
-                body = "리더부여 퀘스트 MAX를 달성하여 " + experience + end_content;
-            } else if (experience >= mediumScore) {
-                title = "리더부여 퀘스트 MEDIAN 달성!";
-                body = "리더부여 퀘스트 MEDIAN을 달성하여 " + experience + end_content;
-            } else {
-                title = "리더부여 퀘스트 종료";
-                body = "리더부여 퀘스트 기간이 종료되었습니다." + end_content;
-            }
+            title = "전사 프로젝트 완료!";
+            body = "전사 프로젝트를 완료하여 " + experience + exp_content;
         }
 
-        // 하단 코드는 고정 - 정윤
         int successCount = 0;
         for (String token : fcmTokens) {
             try {
