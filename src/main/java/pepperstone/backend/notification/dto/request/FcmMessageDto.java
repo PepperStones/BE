@@ -17,9 +17,8 @@ public class FcmMessageDto {
     @AllArgsConstructor
     @Getter
     public static class Message {
-        private Data notification; // 알림 정보
+        private Data data; // 알림 정보
         private String token; // 수신자 토큰
-        private Map<String, String> data; // timestamp를 포함한 data 필드 추가
     }
 
     @Builder
