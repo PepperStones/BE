@@ -55,11 +55,11 @@ public class UserEntity {
 
     @Enumerated(EnumType.STRING)
     @Builder.Default
-    private Decoration decoration = Decoration.D0; // Default 값: D0
+    private Decoration decoration = Decoration.Dx; // Default 값: D0
 
     @Enumerated(EnumType.STRING)
     @Builder.Default
-    private Effect effect = Effect.E0; // Default 값: E0
+    private Effect effect = Effect.Ex; // Default 값: E0
 
     // jobGroup : users = 1 : N
     @ManyToOne(targetEntity = JobGroupEntity.class)
