@@ -118,6 +118,18 @@ public class MemberService {
                 unlockStatusRepo.save(unlockStatus);
             }
 
+            unlockStatusRepo.save(UnlockStatusEntity.builder()
+                    .itemType(ItemType.DECORATION)
+                    .itemValue("Dx")
+                    .users(user)
+                    .build());
+
+            unlockStatusRepo.save(UnlockStatusEntity.builder()
+                    .itemType(ItemType.EFFECT)
+                    .itemValue("Ex")
+                    .users(user)
+                    .build());
+
             addMember(user);
         } catch (Exception e) {
             e.printStackTrace();
