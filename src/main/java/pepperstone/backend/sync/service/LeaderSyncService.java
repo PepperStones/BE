@@ -304,7 +304,7 @@ public class LeaderSyncService {
 
         // 10번째 행부터 시작
         int startRow = 9;
-        while (startRow < data.size() && !data.get(startRow).get(1).toString().isEmpty() && data.get(startRow).size() > 5) {
+        while (startRow < data.size() && data.get(startRow).size() > 5) {
             List<Object> questRow = data.get(startRow);
 
             // 필요한 정보 추출
